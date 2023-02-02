@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   LoggedInUser,
   useLayoutType,
@@ -23,6 +23,7 @@ import OfflineBanner from "../offline-banner/offline-banner.component";
 import { isDesktop } from "../../utils";
 import { UserSession } from "../../types";
 import styles from "./navbar.scss";
+import { fetchLocation } from "../../primary-navigation.resource";
 
 export interface NavbarProps {
   user: LoggedInUser;
@@ -43,6 +44,19 @@ const Navbar: React.FC<NavbarProps> = ({
   ).map((e) => e.id);
 
   const [activeHeaderPanel, setActiveHeaderPanel] = useState<string>(null);
+  const [facilityLocation, setFacilityLocation] = useState("");
+
+  useEffect(() => {
+    const loadFacilityLocation = async () => {
+      const facilitylocation = await fetchLocation();
+      facilitylocation.data.results.forEach((element) => {
+        if (element.tags.some((x) => x.display === "Facility Location")) {
+          setFacilityLocation(element.display);
+        }
+      });
+    };
+    loadFacilityLocation();
+  }, [facilityLocation]);
 
   const isActivePanel = useCallback(
     (panelName: string) => activeHeaderPanel === panelName,
@@ -88,6 +102,10 @@ const Navbar: React.FC<NavbarProps> = ({
               <Logo />
             </div>
           </ConfigurableLink>
+          <div className={styles.navDivider} />
+          <div className={styles.patientDetails}>
+            <PatientFacilityInformation facilityLocation={facilityLocation} />
+          </div>
           <ExtensionSlot
             className={styles.dividerOverride}
             name="top-nav-info-slot"
@@ -187,6 +205,14 @@ const Navbar: React.FC<NavbarProps> = ({
   );
 
   return <div>{session && <HeaderContainer render={render} />}</div>;
+};
+interface PatientFacilityInformationProps {
+  facilityLocation: string;
+}
+const PatientFacilityInformation: React.FC<PatientFacilityInformationProps> = ({
+  facilityLocation,
+}) => {
+  return <span className={styles.patientName}>{facilityLocation}</span>;
 };
 
 export default Navbar;
