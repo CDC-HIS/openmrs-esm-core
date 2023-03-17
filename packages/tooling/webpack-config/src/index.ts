@@ -158,11 +158,10 @@ export default (
     // only one container context--i.e., if we had an entry point per module,
     // WMF could get confused and not resolve shared dependencies correctly.
     output: {
-      // Use default `libraryTarget`, which is jsonp
       publicPath: "auto",
       path: resolve(root, outDir),
+      hashFunction: "xxhash64",
     },
-    target: "web",
     module: {
       rules: [
         merge(
@@ -206,7 +205,8 @@ export default (
       ],
     },
     mode,
-    devtool: mode === production ? false : "inline-source-map",
+    devtool:
+      mode === production ? "hidden-nosources-source-map" : "eval-source-map",
     devServer: {
       headers: {
         "Access-Control-Allow-Origin": "*",
