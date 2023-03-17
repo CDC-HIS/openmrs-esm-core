@@ -395,7 +395,7 @@ ___
 
 ### ExtensionProps
 
-Ƭ **ExtensionProps**: { `state?`: `Record`<`string`, `any`\> ; `wrap?`: (`slot`: `ReactNode`, `extension`: [`ExtensionData`](interfaces/ExtensionData.md)) => ``null`` \| `ReactElement`<`any`, `any`\>  } & `Omit`<`React.HTMLAttributes`<`HTMLDivElement`\>, ``"children"``\> & { `children?`: `React.ReactNode` \| (`extension`: `React.ReactNode`) => `React.ReactNode`  }
+Ƭ **ExtensionProps**: { `state?`: `Record`<`string`, `any`\> ; `wrap?`: (`slot`: `ReactNode`, `extension`: [`ExtensionData`](interfaces/ExtensionData.md)) => ``null`` \| `ReactElement`<`any`, `any`\>  } & `Omit`<`React.HTMLAttributes`<`HTMLDivElement`\>, ``"children"``\> & { `children?`: `React.ReactNode` \| (`slot`: `React.ReactNode`, `extension?`: [`ExtensionData`](interfaces/ExtensionData.md)) => `React.ReactNode`  }
 
 #### Defined in
 
@@ -1611,25 +1611,19 @@ ___
 
 ### useConfig
 
-▸ **useConfig**(): `Object`
+▸ **useConfig**<`T`\>(): `T`
 
 Use this React Hook to obtain your module's configuration.
 
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | `Omit`<[`ConfigObject`](interfaces/ConfigObject.md), ``"Display conditions"`` \| ``"Translation overrides"``\> |
+
 #### Returns
 
-`Object`
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `Display conditions?` | [`DisplayConditionsConfigObject`](interfaces/DisplayConditionsConfigObject.md) | - |
-| `Translation overrides?` | `Record`<`string`, `Record`<`string`, `string`\>\> | - |
-| `constructor` | `Function` | The initial value of Object.prototype.constructor is the standard built-in Object constructor. |
-| `hasOwnProperty` | (`v`: `PropertyKey`) => `boolean` | Determines whether an object has a property with the specified name. |
-| `isPrototypeOf` | (`v`: `Object`) => `boolean` | Determines whether an object exists in another object's prototype chain. |
-| `propertyIsEnumerable` | (`v`: `PropertyKey`) => `boolean` | Determines whether a specified property is enumerable. |
-| `toLocaleString` | () => `string` | Returns a date converted to a string using the current locale. |
-| `toString` | () => `string` | Returns a string representation of an object. |
-| `valueOf` | () => `Object` | Returns the primitive value of the specified object. |
+`T`
 
 #### Defined in
 
@@ -2114,7 +2108,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-error-handling/src/index.ts:24](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-error-handling/src/index.ts#L24)
+[packages/framework/esm-error-handling/src/index.ts:31](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-error-handling/src/index.ts#L31)
 
 ___
 
@@ -2134,7 +2128,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-error-handling/src/index.ts:17](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-error-handling/src/index.ts#L17)
+[packages/framework/esm-error-handling/src/index.ts:24](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-error-handling/src/index.ts#L24)
 
 ___
 

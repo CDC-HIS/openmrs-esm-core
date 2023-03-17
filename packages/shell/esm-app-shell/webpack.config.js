@@ -7,8 +7,7 @@ const BundleAnalyzerPlugin =
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const { InjectManifest } = require("workbox-webpack-plugin");
 const { DefinePlugin, container } = require("webpack");
-const { resolve, dirname, basename } = require("path");
-const { readdirSync, statSync } = require("fs");
+const { resolve } = require("path");
 const { removeTrailingSlash, getTimestamp } = require("./tools/helpers");
 const { name, version, dependencies } = require("./package.json");
 const sharedDependencies = require("./dependencies.json");
@@ -16,7 +15,6 @@ const frameworkVersion = require("@openmrs/esm-framework/package.json").version;
 
 const timestamp = getTimestamp();
 const production = "production";
-const allowedSuffixes = ["-app", "-widgets"];
 const { ModuleFederationPlugin } = container;
 
 const openmrsAddCookie = process.env.OMRS_ADD_COOKIE;
@@ -41,27 +39,6 @@ const openmrsConfigUrls = (process.env.OMRS_CONFIG_URLS || "")
   .map((url) => JSON.stringify(url))
   .join(", ");
 
-function checkDirectoryExists(dirName) {
-  if (dirName) {
-    try {
-      return statSync(dirName).isDirectory();
-    } catch {
-      return false;
-    }
-  }
-
-  return false;
-}
-
-function checkDirectoryHasContents(dirName) {
-  if (checkDirectoryExists(dirName)) {
-    const contents = readdirSync(dirName);
-    return contents.length > 0;
-  } else {
-    return false;
-  }
-}
-
 module.exports = (env, argv = {}) => {
   const mode = argv.mode || process.env.NODE_ENV || production;
   const outDir = mode === production ? "dist" : "lib";
@@ -71,10 +48,11 @@ module.exports = (env, argv = {}) => {
   return {
     entry: resolve(__dirname, "src/index.ts"),
     output: {
-      filename: "openmrs.js",
+      filename: isProd ? "openmrs.[contenthash].js" : "openmrs.js",
       chunkFilename: "[chunkhash].js",
       path: resolve(__dirname, outDir),
       publicPath: "",
+      hashFunction: "xxhash64",
     },
     target: "web",
     devServer: {
@@ -103,11 +81,15 @@ module.exports = (env, argv = {}) => {
               proxyReq.setHeader("cookie", newCookie);
             }
           },
+          onProxyRes(proxyRes) {
+            proxyRes.headers &&
+              delete proxyRes.headers["content-security-policy"];
+          },
         },
       ],
     },
     mode,
-    devtool: isProd ? false : "inline-source-map",
+    devtool: isProd ? "hidden-nosources-source-map" : "eval-source-map",
     module: {
       rules: [
         {
@@ -218,7 +200,7 @@ module.exports = (env, argv = {}) => {
       }),
       isProd &&
         new MiniCssExtractPlugin({
-          filename: "openmrs.css",
+          filename: "openmrs.[contenthash].css",
         }),
       new DefinePlugin({
         "process.env.BUILD_VERSION": JSON.stringify(`${version}-${timestamp}`),

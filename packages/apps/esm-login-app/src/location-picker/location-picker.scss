@@ -12,7 +12,7 @@
 }
 
 .paddedContainer {
-  padding: spacing.$spacing-06;
+  padding: spacing.$spacing-06 spacing.$spacing-06 spacing.$spacing-05;
 }
 
 .locationCard {
@@ -31,7 +31,7 @@
 
 .welcomeMessage {
   @extend .bodyLong01;
-  margin-top: spacing.$spacing-01;
+  margin-top: spacing.$spacing-03;
   color: $color-gray-70;
 }
 
@@ -52,7 +52,6 @@
 .locationResultsContainer {
   display: flex;
   overflow-y: auto;
-  margin-top: spacing.$spacing-05;
   padding: 0rem spacing.$spacing-01 0rem;
 }
 
@@ -106,7 +105,12 @@ pagination > button:first-child:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: spacing.$spacing-05;
+  max-width: 50%;
+  margin: spacing.$spacing-05 auto;
+
+  :global(.cds--loading__stroke) {
+    @include brand-03(stroke);
+  }
 }
 
 .loadingContainer {
@@ -118,4 +122,8 @@ pagination > button:first-child:hover {
   flex-direction: column;
   justify-content: center;
   margin: spacing.$spacing-06 auto 0rem;
+}
+
+.loader {
+  min-height: fit-content;
 }
