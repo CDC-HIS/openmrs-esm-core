@@ -201,6 +201,7 @@ const Navbar: React.FC<NavbarProps> = ({
       hidePanel,
       togglePanel,
       onLogout,
+      facilityLocation,
     ]
   );
 
