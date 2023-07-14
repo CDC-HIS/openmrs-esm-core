@@ -1,8 +1,10 @@
 import { ImportmapDeclaration } from "./importmap";
 import { setEnvVariables } from "./variables";
+import type { Configuration as WebpackConfig } from "webpack";
 
 export interface WebpackOptions {
   backend?: string;
+  defaultLocale?: string;
   importmap?: ImportmapDeclaration;
   apiUrl?: string;
   spaPath?: string;
@@ -12,10 +14,11 @@ export interface WebpackOptions {
   env?: string;
   coreAppsDir?: string;
   addCookie?: string;
+  fresh?: boolean;
 }
 
 export function loadWebpackConfig(options: WebpackOptions = {}) {
-  const variables: Record<string, any> = {};
+  const variables: Record<string, unknown> = {};
 
   if (typeof options.backend === "string") {
     variables.OMRS_PROXY_TARGET = options.backend;
@@ -50,6 +53,10 @@ export function loadWebpackConfig(options: WebpackOptions = {}) {
     variables.NODE_ENV = options.env;
   }
 
+  if (typeof options.defaultLocale === "string") {
+    variables.OMRS_ESM_DEFAULT_LOCALE = options.defaultLocale;
+  }
+
   if (typeof options.importmap === "object") {
     switch (options.importmap.type) {
       case "inline":
@@ -65,9 +72,15 @@ export function loadWebpackConfig(options: WebpackOptions = {}) {
     variables.OMRS_ESM_CORE_APPS_DIR = options.coreAppsDir;
   }
 
+  if (typeof options.fresh === "boolean") {
+    variables.OMRS_CLEAN_BEFORE_BUILD = options.fresh;
+  }
+
   setEnvVariables(variables);
 
-  const config = require("@openmrs/esm-app-shell/webpack.config.js");
+  const config:
+    | ((env: Record<string, unknown>) => WebpackConfig)
+    | WebpackConfig = require("@openmrs/esm-app-shell/webpack.config.js");
 
   if (typeof config === "function") {
     return config({});

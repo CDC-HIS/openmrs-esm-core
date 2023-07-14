@@ -1,13 +1,14 @@
 /** @module @category Extension */
-import { Lifecycle } from "@openmrs/esm-globals";
-import { mountRootParcel, Parcel } from "single-spa";
+import { LifeCycles, mountRootParcel, Parcel, ParcelConfig } from "single-spa";
 import { getExtensionNameFromId, getExtensionRegistration } from "./extensions";
-import { checkStatus, getCustomProps } from "./helpers";
+import { checkStatus } from "./helpers";
 import { updateInternalExtensionStore } from "./store";
 
 export interface CancelLoading {
   (): void;
 }
+
+let parcelCount = 0;
 
 /**
  * Mounts into a DOM node (representing an extension slot)
@@ -19,7 +20,7 @@ export async function renderExtension(
   extensionSlotName: string,
   extensionSlotModuleName: string,
   extensionId: string,
-  renderFunction: (lifecycle: Lifecycle) => Lifecycle = (x) => x,
+  renderFunction: (application: ParcelConfig) => ParcelConfig = (x) => x,
   additionalProps: Record<string, any> = {}
 ): Promise<Parcel | null> {
   const extensionName = getExtensionNameFromId(extensionId);
@@ -33,7 +34,7 @@ export async function renderExtension(
       );
     }
 
-    const { load, online, offline, meta, moduleName } = extensionRegistration;
+    const { load, meta, moduleName, online, offline } = extensionRegistration;
 
     if (checkStatus(online, offline)) {
       updateInternalExtensionStore((state) => {
@@ -59,18 +60,24 @@ export async function renderExtension(
       });
 
       const { default: result, ...lifecycle } = await load();
-      parcel = mountRootParcel(renderFunction(result ?? lifecycle), {
-        ...getCustomProps(online, offline),
-        ...additionalProps,
-        _meta: meta,
-        _extensionContext: {
-          extensionId,
-          extensionSlotName,
-          extensionSlotModuleName,
-          extensionModuleName: moduleName,
-        },
-        domElement,
-      });
+      const id = parcelCount++;
+      parcel = mountRootParcel(
+        renderFunction({
+          ...(result ?? lifecycle),
+          name: `${extensionSlotName}/${extensionName}-${id}`,
+        }),
+        {
+          ...additionalProps,
+          _meta: meta,
+          _extensionContext: {
+            extensionId,
+            extensionSlotName,
+            extensionSlotModuleName,
+            extensionModuleName: moduleName,
+          },
+          domElement,
+        }
+      );
     }
   } else {
     console.warn(

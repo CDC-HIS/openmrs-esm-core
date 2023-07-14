@@ -4,9 +4,9 @@ import yargs from "yargs";
 import { fork } from "child_process";
 import { resolve } from "path";
 import {
-  getImportmap,
-  mergeImportmap,
-  proxyImportmap,
+  getImportmapAndRoutes,
+  mergeImportmapAndRoutes,
+  proxyImportmapAndRoutes,
   runProject,
   trimEnd,
 } from "./utils";
@@ -100,20 +100,19 @@ yargs.command(
       .describe(
         "importmap",
         "The import map to use. Can be a path to a valid import map to be taken literally, an URL, or a fixed JSON object."
-      ),
+      )
+      .string("routes")
+      .default("routes", "routes.registry.json")
+      .describe("routes", "The routes.registry.json file to use."),
   async (args) =>
     runCommand("runDebug", {
       configUrls: args["config-url"],
       ...args,
-      importmap: proxyImportmap(
-        await mergeImportmap(
-          await getImportmap(args.importmap, args.port),
+      ...proxyImportmapAndRoutes(
+        await mergeImportmapAndRoutes(
+          await getImportmapAndRoutes(args.importmap, args.routes, args.port),
           (args["run-project"] || (args.runProject as boolean)) &&
-            (await runProject(
-              args.port,
-              args["shared-dependencies"],
-              args.sources
-            ))
+            (await runProject(args.port, args.sources))
         ),
         args.backend,
         args.host,
@@ -174,20 +173,19 @@ yargs.command(
       .describe(
         "importmap",
         "The import map to use. Can be a path to a valid import map to be taken literally, an URL, or a fixed JSON object."
-      ),
+      )
+      .string("routes")
+      .default("routes", "routes.registry.json")
+      .describe("routes", "The routes.registry.json file to use."),
   async (args) =>
     runCommand("runDevelop", {
       configUrls: args["config-url"],
       ...args,
-      importmap: proxyImportmap(
-        await mergeImportmap(
-          await getImportmap(args.importmap, args.port),
+      ...proxyImportmapAndRoutes(
+        await mergeImportmapAndRoutes(
+          await getImportmapAndRoutes(args.importmap, args.routes, args.port),
           (args.sources[0] as string | boolean) !== false &&
-            (await runProject(
-              args.port,
-              args["shared-dependencies"],
-              args.sources
-            )),
+            (await runProject(args.port, args.sources)),
           args.backend,
           args.spaPath
         ),
@@ -266,6 +264,12 @@ yargs.command(
         describe:
           "The import map to use. Can be a path to an import map to be taken literally, an URL, or a fixed JSON object.",
         type: "string",
+      })
+      .option("default-locale", {
+        default: "",
+        describe:
+          "The locale to use as a default for this build of the app shell. Should be a value that's valid to use in an HTML lang attribute, e.g., en or en_GB.",
+        type: "string",
       }),
   async (args) =>
     runCommand("runBuild", {
@@ -315,6 +319,12 @@ yargs.command(
       .option("manifest", {
         default: false,
         description: "Whether to output a manifest",
+        type: "boolean",
+      })
+      .option("build-routes", {
+        default: true,
+        description:
+          "Whether to compile all module routes.json into a master routes.json",
         type: "boolean",
       })
       .option("mode", {

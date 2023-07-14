@@ -7,6 +7,7 @@ import {
   ExtensionSlotConfigObject,
 } from "@openmrs/esm-config";
 import { createGlobalStore, getGlobalStore } from "@openmrs/esm-state";
+import type { LifeCycles } from "single-spa";
 
 export interface ExtensionMeta {
   [_: string]: any;
@@ -14,13 +15,13 @@ export interface ExtensionMeta {
 
 export interface ExtensionRegistration {
   name: string;
-  load(): Promise<any>;
+  load(): Promise<{ default?: LifeCycles } & LifeCycles>;
   moduleName: string;
   meta: ExtensionMeta;
   order?: number;
-  online?: boolean | object;
-  offline?: boolean | object;
-  privileges?: string | string[];
+  online?: boolean;
+  offline?: boolean;
+  privileges?: string | Array<string>;
 }
 
 export interface ExtensionInfo extends ExtensionRegistration {
@@ -123,9 +124,8 @@ export function updateInternalExtensionStore(
 }
 
 /**
- * This returns a [store](https://github.com/developit/unistore#store)
- * that modules can use to get information about the state of the
- * extension system.
+ * This returns a store that modules can use to get information about the
+ * state of the extension system.
  */
 export const getExtensionStore = () =>
   getGlobalStore<ExtensionStore>("extensions", {

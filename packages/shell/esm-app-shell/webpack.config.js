@@ -7,14 +7,17 @@ const BundleAnalyzerPlugin =
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const { InjectManifest } = require("workbox-webpack-plugin");
 const { DefinePlugin, container } = require("webpack");
-const { resolve } = require("path");
+const { basename, dirname, resolve } = require("path");
 const { removeTrailingSlash, getTimestamp } = require("./tools/helpers");
+const { readdirSync, statSync, readFileSync } = require("fs");
+
 const { name, version, dependencies } = require("./package.json");
 const sharedDependencies = require("./dependencies.json");
 const frameworkVersion = require("@openmrs/esm-framework/package.json").version;
 
 const timestamp = getTimestamp();
 const production = "production";
+const allowedSuffixes = ["-app", "-widgets"];
 const { ModuleFederationPlugin } = container;
 
 const openmrsAddCookie = process.env.OMRS_ADD_COOKIE;
@@ -27,23 +30,115 @@ const openmrsPublicPath = removeTrailingSlash(
 const openmrsProxyTarget =
   process.env.OMRS_PROXY_TARGET || "https://dev3.openmrs.org/";
 const openmrsPageTitle = process.env.OMRS_PAGE_TITLE || "OpenMRS";
-const openmrsFavicon = process.env.OMRS_FAVICON || "favicon.ico";
-const openmrsOffline = process.env.OMRS_OFFLINE !== "disable";
-const openmrsImportmapDef = process.env.OMRS_ESM_IMPORTMAP;
+const openmrsFavicon =
+  process.env.OMRS_FAVICON || `${openmrsPublicPath}/favicon.ico`;
 const openmrsEnvironment = process.env.OMRS_ENV || process.env.NODE_ENV || "";
+const openmrsOffline = process.env.OMRS_OFFLINE !== "disable";
+const openmrsDefaultLocale = process.env.OMRS_ESM_DEFAULT_LOCALE || "en";
+const openmrsImportmapDef = process.env.OMRS_ESM_IMPORTMAP;
 const openmrsImportmapUrl =
   process.env.OMRS_ESM_IMPORTMAP_URL || `${openmrsPublicPath}/importmap.json`;
+const openmrsRoutesDef = process.env.OMRS_ROUTES;
+const openmrsRoutesUrl =
+  process.env.OMRS_ROUTES_URL || `${openmrsPublicPath}/routes.registry.json`;
+const openmrsCoreApps =
+  process.env.OMRS_ESM_CORE_APPS_DIR || resolve(__dirname, "../../apps");
 const openmrsConfigUrls = (process.env.OMRS_CONFIG_URLS || "")
   .split(";")
   .filter((url) => url.length > 0)
   .map((url) => JSON.stringify(url))
   .join(", ");
+const openmrsCleanBeforeBuild =
+  (() => {
+    try {
+      return (
+        process.env.OMRS_CLEAN_BEFORE_BUILD === undefined ||
+        (typeof process.env.OMRS_CLEAN_BEFORE_BUILD === "boolean" &&
+          process.env.OMRS_CLEAN_BEFORE_BUILD) ||
+        (typeof process.env.OMRS_CLEAN_BEFORE_BUILD === "string" &&
+          process.env.OMRS_CLEAN_BEFORE_BUILD.toLowerCase() !== "false")
+      );
+    } catch {}
 
+    return undefined;
+  })() ?? true;
+
+function checkDirectoryExists(dirName) {
+  if (dirName) {
+    try {
+      return statSync(dirName).isDirectory();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function checkFileExists(filename) {
+  if (filename) {
+    try {
+      return statSync(filename).isFile();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function checkDirectoryHasContents(dirName) {
+  if (checkDirectoryExists(dirName)) {
+    const contents = readdirSync(dirName);
+    return contents.length > 0;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * @param {*} env
+ * @param {*} argv
+ * @returns {import("webpack").Configuration}
+ */
 module.exports = (env, argv = {}) => {
   const mode = argv.mode || process.env.NODE_ENV || production;
   const outDir = mode === production ? "dist" : "lib";
   const isProd = mode === "production";
   const appPatterns = [];
+
+  const coreImportmap = {
+    imports: {},
+  };
+
+  const coreRoutes = {};
+
+  if (!isProd && checkDirectoryExists(openmrsCoreApps)) {
+    readdirSync(openmrsCoreApps).forEach((dir) => {
+      const appDir = resolve(openmrsCoreApps, dir);
+      if (checkDirectoryExists(appDir)) {
+        const { name, browser } = require(resolve(appDir, "package.json"));
+        const distDir = resolve(appDir, dirname(browser));
+        if (allowedSuffixes.some((suffix) => name.endsWith(suffix))) {
+          if (checkDirectoryHasContents(distDir)) {
+            appPatterns.push({
+              from: distDir,
+              to: dir,
+            });
+
+            coreImportmap.imports[name] = `./${dir}/${basename(browser)}`;
+
+            const routesFile = resolve(distDir, "routes.json");
+            if (checkFileExists(routesFile)) {
+              coreRoutes[name] = JSON.parse(readFileSync(routesFile));
+            }
+          } else {
+            console.warn(
+              `Not serving ${name} because couldn't find ${distDir}`
+            );
+          }
+        }
+      }
+    });
+  }
 
   return {
     entry: resolve(__dirname, "src/index.ts"),
@@ -64,16 +159,40 @@ module.exports = (env, argv = {}) => {
       historyApiFallback: {
         rewrites: [
           {
-            from: new RegExp(`^${openmrsPublicPath}/.*(?!\.(?!html?).+$)`),
+            from: new RegExp(`^${openmrsPublicPath}/.*(?!\.(?!html).+$)`),
             to: `${openmrsPublicPath}/index.html`,
           },
         ],
       },
       proxy: [
         {
-          context: [`${openmrsApiUrl}/**`, `${openmrsPublicPath}/**`],
+          /**
+           * @param {String} path
+           */
+          context(path) {
+            if (!path) {
+              return false;
+            }
+
+            if (path.startsWith(openmrsPublicPath)) {
+              if (basename(path).indexOf(".") >= 0) {
+                return true;
+              } else {
+                return false;
+              }
+            }
+
+            if (path.startsWith(openmrsApiUrl)) {
+              return true;
+            }
+
+            return false;
+          },
           target: openmrsProxyTarget,
           changeOrigin: true,
+          /**
+           * @param {Request} proxyReq
+           */
           onProxyReq(proxyReq) {
             if (openmrsAddCookie) {
               const origCookie = proxyReq.getHeader("cookie");
@@ -81,12 +200,16 @@ module.exports = (env, argv = {}) => {
               proxyReq.setHeader("cookie", newCookie);
             }
           },
+          /**
+           * @param {Response} proxyRes
+           */
           onProxyRes(proxyRes) {
             proxyRes.headers &&
               delete proxyRes.headers["content-security-policy"];
           },
         },
       ],
+      static: ["src/assets"],
     },
     mode,
     devtool: isProd ? "hidden-nosources-source-map" : "eval-source-map",
@@ -114,24 +237,10 @@ module.exports = (env, argv = {}) => {
           type: "asset/source",
         },
         {
-          test: /\.jsx?$/,
+          test: /\.(j|t)sx?$/,
           use: [
             {
-              loader: require.resolve("esbuild-loader"),
-              options: {
-                loader: "jsx",
-              },
-            },
-          ],
-        },
-        {
-          test: /\.tsx?$/,
-          use: [
-            {
-              loader: require.resolve("esbuild-loader"),
-              options: {
-                loader: "tsx",
-              },
+              loader: "swc-loader",
             },
           ],
         },
@@ -149,7 +258,7 @@ module.exports = (env, argv = {}) => {
       },
     },
     plugins: [
-      new CleanWebpackPlugin(),
+      openmrsCleanBeforeBuild && new CleanWebpackPlugin(),
       new WebpackPwaManifest({
         name: "OpenMRS",
         short_name: "OpenMRS",
@@ -174,11 +283,17 @@ module.exports = (env, argv = {}) => {
           openmrsPublicPath,
           openmrsFavicon,
           openmrsPageTitle,
+          openmrsDefaultLocale,
           openmrsImportmapDef,
           openmrsImportmapUrl,
+          openmrsRoutesDef,
+          openmrsRoutesUrl,
           openmrsOffline,
           openmrsEnvironment,
           openmrsConfigUrls,
+          openmrsCoreImportmap:
+            appPatterns.length > 0 && JSON.stringify(coreImportmap),
+          openmrsCoreRoutes: coreRoutes && JSON.stringify(coreRoutes),
         },
       }),
       new CopyWebpackPlugin({
@@ -218,6 +333,7 @@ module.exports = (env, argv = {}) => {
             mode === production ? undefined : Number.MAX_SAFE_INTEGER,
           additionalManifestEntries: [
             { url: openmrsImportmapUrl, revision: null },
+            { url: openmrsRoutesUrl, revision: null },
           ],
         }),
     ].filter(Boolean),

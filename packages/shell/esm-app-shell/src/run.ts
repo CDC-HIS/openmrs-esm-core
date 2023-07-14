@@ -1,10 +1,4 @@
-import "import-map-overrides";
-import "systemjs/dist/system";
-import "systemjs/dist/extras/amd";
-import "systemjs/dist/extras/named-exports";
-import "systemjs/dist/extras/named-register";
-import "systemjs/dist/extras/use-default";
-import { start, unregisterApplication, getAppNames } from "single-spa";
+import { start, triggerAppChange } from "single-spa";
 import {
   setupApiModule,
   renderLoadingSpinner,
@@ -31,6 +25,10 @@ import {
   activateOfflineCapability,
   subscribePrecacheStaticDependencies,
   openmrsFetch,
+  interpolateUrl,
+  OpenmrsRoutes,
+  getCurrentImportMap,
+  importDynamic,
 } from "@openmrs/esm-framework/src/internal";
 import {
   finishRegisteringAllApps,
@@ -38,48 +36,65 @@ import {
   tryRegisterExtension,
 } from "./apps";
 import { setupI18n } from "./locale";
-import { loadModules } from "./load-modules";
 import { appName, getCoreExtensions } from "./ui";
-import { registerModules, sharedDependencies } from "./dependencies";
 
-/**
- * Loads the frontend modules (apps and widgets). Should be done *after*
- * the import maps initialized, i.e., after modules loaded.
- *
- * By convention we call frontend modules registering activation functions
- * apps, and all others widgets. This is not enforced technically.
- */
-function loadApps() {
-  return window.importMapOverrides
-    .getCurrentPageMap()
-    .then((importMap) => loadModules(importMap.imports));
-}
-
-/**
- * Registers the extensions already coming from the app shell itself.
- */
-function registerCoreExtensions() {
-  const extensions = getCoreExtensions();
-
-  for (const extension of extensions) {
-    tryRegisterExtension(appName, extension);
-  }
-}
+// @internal
+// used to track when the window.installedModules global is finalised
+// so we can pre-load all modules
+const REGISTRATION_PROMISES = Symbol("openmrs_registration_promises");
 
 /**
  * Sets up the frontend modules (apps). Uses the defined export
- * from the root modules of the apps, which should export a
- * special function called "setupOpenMRS".
- * That function returns an object that is used to feed Single
- * SPA.
+ * from the root modules of the apps. This is done by reading the
+ * list of apps from the routes.registry.json file, which serves
+ * as the registry of all apps in the application.
  */
-async function setupApps(modules: Array<[string, System.Module]>) {
-  modules.forEach(([appName, appExports]) => registerApp(appName, appExports));
-  subscribeConnectivity(async () => {
-    const appNames = getAppNames();
-    await Promise.all(appNames.map(unregisterApplication));
-    finishRegisteringAllApps();
-  });
+async function setupApps() {
+  const scriptTags = document.querySelectorAll<HTMLScriptElement>(
+    "script[type='openmrs-routes']"
+  );
+
+  const promises: Array<Promise<OpenmrsRoutes>> = [];
+  for (let i = 0; i < scriptTags.length; i++) {
+    promises.push(
+      (async (scriptTag) => {
+        let routes: OpenmrsRoutes | undefined = undefined;
+        try {
+          if (scriptTag.textContent) {
+            routes = JSON.parse(scriptTag.textContent) as OpenmrsRoutes;
+          } else if (scriptTag.src) {
+            routes = (await openmrsFetch<OpenmrsRoutes>(scriptTag.src)).data;
+          }
+        } catch (e) {
+          console.error(
+            `Caught error while loading routes from ${
+              scriptTag.src ?? "JSON script tag content"
+            }`,
+            e
+          );
+
+          return {};
+        }
+
+        return Promise.resolve(routes ?? {});
+      })(scriptTags.item(i))
+    );
+  }
+
+  const routes = (await Promise.all(promises)).reduce(
+    (accumulatedRoutes, routes) => ({ ...accumulatedRoutes, ...routes }),
+    {}
+  );
+
+  const modules: typeof window.installedModules = [];
+  const registrationPromises = Object.entries(routes).map(
+    async ([module, routes]) => {
+      modules.push([module, routes]);
+      registerApp(module, routes);
+    }
+  );
+
+  window[REGISTRATION_PROMISES] = Promise.all(registrationPromises);
   window.installedModules = modules;
 }
 
@@ -97,6 +112,9 @@ async function loadConfigs(configs: Array<{ name: string; value: Config }>) {
  */
 function connectivityChanged() {
   const online = navigator.onLine;
+  // NB We do not wait for this to be done; it is simply scheduled
+  triggerAppChange();
+
   dispatchConnectivityChanged(online);
   showToast({
     critical: true,
@@ -115,6 +133,17 @@ function runShell() {
   return setupI18n()
     .catch((err) => console.error(`Failed to initialize translations`, err))
     .then(() => start());
+}
+
+async function preloadScripts() {
+  const [, importMap] = await Promise.all([
+    window[REGISTRATION_PROMISES],
+    getCurrentImportMap(),
+  ]);
+
+  window.installedModules.map(async ([module]) => {
+    importDynamic(module, undefined, { importMap });
+  });
 }
 
 function handleInitFailure(e: Error) {
@@ -170,8 +199,9 @@ function clearDevOverrides() {
 
 function createConfigLoader(configUrls: Array<string>) {
   const loadingConfigs = Promise.all(
-    configUrls.map((configUrl) =>
-      fetch(configUrl)
+    configUrls.map((configUrl) => {
+      const interpolatedUrl = interpolateUrl(configUrl);
+      return fetch(interpolatedUrl)
         .then((res) => res.json())
         .then((config) => ({
           name: configUrl,
@@ -183,8 +213,8 @@ function createConfigLoader(configUrls: Array<string>) {
             name: configUrl,
             value: {},
           };
-        })
-    )
+        });
+    })
   );
   return () => loadingConfigs.then(loadConfigs);
 }
@@ -200,21 +230,28 @@ function showActionableNotifications() {
   renderActionableNotifications(
     document.querySelector(".omrs-actionable-notifications-container")
   );
-  return;
 }
 
 function showToasts() {
   renderToasts(document.querySelector(".omrs-toasts-container"));
-  return;
 }
 
 function showModals() {
   renderModals(document.querySelector(".omrs-modals-container"));
-  return;
 }
 
 function showLoadingSpinner() {
   return renderLoadingSpinner(document.body);
+}
+
+/**
+ * Registers the extensions coming from the app shell itself.
+ */
+function registerCoreExtensions() {
+  const extensions = getCoreExtensions();
+  for (const extension of extensions) {
+    tryRegisterExtension(appName, extension);
+  }
 }
 
 async function setupOffline() {
@@ -324,18 +361,16 @@ export function run(configUrls: Array<string>, offline: boolean) {
   subscribeActionableNotificationShown(showActionableNotification);
   subscribeToastShown(showToast);
   subscribePrecacheStaticDependencies(precacheGlobalStaticDependencies);
-  // FIXME this is part of a hack to load esm-form-app which depends on the legacy loading for now
-  // Once esm-form-app can be upgraded to Angular 12 and Module Federation, we should be able to ditch this
-  registerModules(sharedDependencies);
   setupApiModule();
   registerCoreExtensions();
 
-  return loadApps()
-    .then(setupApps)
+  return setupApps()
+    .then(finishRegisteringAllApps)
     .then(setupOfflineCssClasses)
     .then(provideConfigs)
     .then(runShell)
     .catch(handleInitFailure)
     .then(closeLoading)
-    .then(() => (offline ? setupOffline() : undefined));
+    .then(offline ? setupOffline : undefined)
+    .then(preloadScripts);
 }

@@ -14,6 +14,7 @@ import {
   navigate,
   setSessionLocation,
   useConfig,
+  useConnectivity,
   useSession,
 } from "@openmrs/esm-framework";
 import type { LoginReferrer } from "../login/login.component";
@@ -23,13 +24,11 @@ import styles from "./location-picker.scss";
 interface LocationPickerProps {
   hideWelcomeMessage?: boolean;
   currentLocationUuid?: string;
-  isLoginEnabled: boolean;
 }
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   hideWelcomeMessage,
   currentLocationUuid,
-  isLoginEnabled,
 }) => {
   const { t } = useTranslation();
   const searchTimeout = 300;
@@ -39,6 +38,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   const config = useConfig();
   const { chooseLocation } = config;
   const userDefaultLoginLocation = "userDefaultLoginLocationKey";
+  const isLoginEnabled = useConnectivity();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState(() => {
@@ -119,15 +119,21 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   // Handle cases where the location picker is disabled, there is only one location, or there are no locations.
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !searchTerm) {
       if (!config.chooseLocation.enabled || locations?.length === 1) {
         changeLocation(locations[0]?.resource.id);
       }
-      if (!isLoading && !locations?.length) {
+      if (!locations?.length) {
         changeLocation();
       }
     }
-  }, [config.chooseLocation.enabled, isLoading, locations, changeLocation]);
+  }, [
+    config.chooseLocation.enabled,
+    isLoading,
+    locations,
+    changeLocation,
+    searchTerm,
+  ]);
 
   const search = debounce((location: string) => {
     setActiveLocation("");
@@ -200,11 +206,27 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
                   className={styles.radioButtonSkeleton}
                   role="progressbar"
                 />
+                <RadioButtonSkeleton
+                  className={styles.radioButtonSkeleton}
+                  role="progressbar"
+                />
+                <RadioButtonSkeleton
+                  className={styles.radioButtonSkeleton}
+                  role="progressbar"
+                />
+                <RadioButtonSkeleton
+                  className={styles.radioButtonSkeleton}
+                  role="progressbar"
+                />
+                <RadioButtonSkeleton
+                  className={styles.radioButtonSkeleton}
+                  role="progressbar"
+                />
               </div>
             ) : (
               <>
                 <div className={styles.locationResultsContainer}>
-                  {locations?.length && (
+                  {locations?.length > 0 ? (
                     <RadioButtonGroup
                       valueSelected={activeLocation}
                       orientation="vertical"
@@ -223,8 +245,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
                         />
                       ))}
                     </RadioButtonGroup>
-                  )}
-                  {locations?.length === 0 && (
+                  ) : (
                     <div className={styles.emptyState}>
                       <p className={styles.locationNotFound}>
                         {t("noResultsToDisplay", "No results to display")}

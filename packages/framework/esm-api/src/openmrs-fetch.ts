@@ -4,7 +4,11 @@ import isPlainObject from "lodash-es/isPlainObject";
 import { getConfig, navigate } from "@openmrs/esm-config";
 import { FetchResponse } from "./types";
 
-export const sessionEndpoint = "/ws/rest/v1/session";
+export const restBaseUrl = "/ws/rest/v1/";
+
+export const fhirBaseUrl = "/ws/fhir2/R4";
+
+export const sessionEndpoint = `${restBaseUrl}session`;
 
 /**
  * Append `path` to the OpenMRS SPA base.
@@ -17,6 +21,13 @@ export const sessionEndpoint = "/ws/rest/v1/session";
  * ```
  */
 export function makeUrl(path: string) {
+  if (path && path.startsWith("http")) {
+    return path;
+  } else if (path[0] !== "/") {
+    // ensure path starts with /
+    path = "/" + path;
+  }
+
   return window.openmrsBase + path;
 }
 
@@ -93,8 +104,7 @@ export function openmrsFetch<T = any>(
   }
 
   // Prefix the url with the openmrs spa base
-  // @ts-ignore
-  const url = makeUrl(path);
+  let url: string = makeUrl(path);
 
   // We're going to need some headers
   if (!fetchInit.headers) {
@@ -126,8 +136,19 @@ export function openmrsFetch<T = any>(
    * header. Returning that header is useful when using the API, but
    * not from a UI.
    */
-  if (typeof fetchInit.headers["Disable-WWW-Authenticate"] === "undefined") {
+  if (
+    path.startsWith(restBaseUrl) &&
+    typeof fetchInit.headers["Disable-WWW-Authenticate"] === "undefined"
+  ) {
     fetchInit.headers["Disable-WWW-Authenticate"] = "true";
+  }
+
+  if (path.startsWith(fhirBaseUrl)) {
+    const urlUrl = new URL(url, window.location.toString());
+    if (!urlUrl.searchParams.has("_summary")) {
+      urlUrl.searchParams.set("_summary", "data");
+      url = urlUrl.toString();
+    }
   }
 
   /* We capture the stacktrace before making the request, so that if an error occurs we can
@@ -149,16 +170,19 @@ export function openmrsFetch<T = any>(
         return response;
       } else {
         // HTTP 200s - The request succeeded
-        return response.text().then((responseText) => {
-          try {
-            if (responseText) {
-              response.data = JSON.parse(responseText);
+        return response
+          .clone()
+          .text()
+          .then((responseText) => {
+            try {
+              if (responseText) {
+                response.data = JSON.parse(responseText);
+              }
+            } catch (err) {
+              // Server didn't respond with json
             }
-          } catch (err) {
-            // Server didn't respond with json
-          }
-          return response;
-        });
+            return response;
+          });
       }
     } else {
       /* HTTP response status is not in 200s. Usually this will mean
@@ -188,32 +212,40 @@ export function openmrsFetch<T = any>(
           : new Promise<FetchResponse>(() => {});
       } else {
         // Attempt to download a response body, if it has one
-        return response.text().then(
-          (responseText) => {
-            let responseBody = responseText;
-            try {
-              responseBody = JSON.parse(responseText);
-            } catch (err) {
-              // Server didn't respond with json, so just go with the response text string
-            }
+        return response
+          .clone()
+          .text()
+          .then(
+            (responseText) => {
+              let responseBody = responseText;
+              try {
+                responseBody = JSON.parse(responseText);
+              } catch (err) {
+                // Server didn't respond with json, so just go with the response text string
+              }
 
-            /* Make the fetch promise go into "rejected" status, with the best
-             * possible stacktrace and error message.
-             */
-            throw new OpenmrsFetchError(
-              url,
-              response,
-              responseBody,
-              requestStacktrace
-            );
-          },
-          (err) => {
-            /* We weren't able to download a response body for this error.
-             * Time to just give the best possible stacktrace and error message.
-             */
-            throw new OpenmrsFetchError(url, response, null, requestStacktrace);
-          }
-        );
+              /* Make the fetch promise go into "rejected" status, with the best
+               * possible stacktrace and error message.
+               */
+              throw new OpenmrsFetchError(
+                url,
+                response,
+                responseBody,
+                requestStacktrace
+              );
+            },
+            (err) => {
+              /* We weren't able to download a response body for this error.
+               * Time to just give the best possible stacktrace and error message.
+               */
+              throw new OpenmrsFetchError(
+                url,
+                response,
+                null,
+                requestStacktrace
+              );
+            }
+          );
       }
     }
   });
@@ -303,7 +335,7 @@ export class OpenmrsFetchError extends Error {
   responseBody: string | FetchResponseJson | null;
 }
 
-interface FetchConfig extends Omit<Omit<RequestInit, "body">, "headers"> {
+export interface FetchConfig extends Omit<RequestInit, "body" | "headers"> {
   headers?: FetchHeaders;
   body?: FetchBody | string;
 }

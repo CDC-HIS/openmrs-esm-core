@@ -41,7 +41,8 @@ export const Extension: React.FC<ExtensionProps> = ({
   const [domElement, setDomElement] = useState<HTMLDivElement>();
   const { extension } = useContext(ComponentContext);
   const parcel = useRef<Parcel | null>(null);
-  const updatePromise = useRef<Promise<null> | null>(null);
+  const updatePromise = useRef<Promise<void>>(Promise.resolve());
+  const rendering = useRef<boolean>(false);
 
   useEffect(() => {
     if (wrap) {
@@ -65,7 +66,15 @@ export const Extension: React.FC<ExtensionProps> = ({
   );
 
   useEffect(() => {
-    if (domElement != null && extension && !parcel.current) {
+    if (
+      domElement != null &&
+      extension?.extensionSlotName &&
+      extension.extensionSlotModuleName &&
+      extension.extensionSlotModuleName &&
+      !parcel.current &&
+      !rendering.current
+    ) {
+      rendering.current = true;
       renderExtension(
         domElement,
         extension.extensionSlotName,
@@ -75,6 +84,7 @@ export const Extension: React.FC<ExtensionProps> = ({
         state
       ).then((newParcel) => {
         parcel.current = newParcel;
+        rendering.current = false;
       });
 
       return () => {
@@ -82,7 +92,11 @@ export const Extension: React.FC<ExtensionProps> = ({
           const status = parcel.current.getStatus();
           switch (status) {
             case "MOUNTING":
-              parcel.current.mountPromise.then(parcel.current.unmount);
+              parcel.current.mountPromise.then(() => {
+                if (parcel.current?.getStatus() === "MOUNTED") {
+                  parcel.current.unmount();
+                }
+              });
               break;
             case "MOUNTED":
               parcel.current.unmount();
@@ -90,10 +104,7 @@ export const Extension: React.FC<ExtensionProps> = ({
             case "UPDATING":
               if (updatePromise.current) {
                 updatePromise.current.then(() => {
-                  if (
-                    parcel.current &&
-                    parcel.current.getStatus() === "MOUNTED"
-                  ) {
+                  if (parcel.current?.getStatus() === "MOUNTED") {
                     parcel.current.unmount();
                   }
                 });
@@ -114,21 +125,34 @@ export const Extension: React.FC<ExtensionProps> = ({
   ]);
 
   useEffect(() => {
-    if (parcel.current && parcel.current.update) {
-      if (parcel.current.getStatus() === "MOUNTED") {
-        parcel.current.update({ ...state });
-      } else if (parcel.current.getStatus() === "MOUNTING") {
-        parcel.current.mountPromise.then(() => {
-          if (parcel.current && parcel.current.update) {
-            updatePromise.current = parcel.current.update({ ...state });
+    if (
+      parcel.current &&
+      parcel.current.update &&
+      parcel.current.getStatus() !== "UNMOUNTING"
+    ) {
+      Promise.all([parcel.current.mountPromise, updatePromise.current]).then(
+        () => {
+          if (
+            parcel?.current?.getStatus() === "MOUNTED" &&
+            parcel.current.update
+          ) {
+            updatePromise.current = parcel.current
+              .update({ ...state })
+              .catch((err) => {
+                // if we were trying to update but the component was unmounted
+                // while this was happening, ignore the error
+                if (
+                  !(err instanceof Error) ||
+                  !err.message.includes("minified message #32") ||
+                  parcel.current?.getStatus() === "MOUNTED"
+                ) {
+                  throw err;
+                }
+              });
           }
-        });
-      }
+        }
+      );
     }
-
-    return () => {
-      updatePromise.current = null;
-    };
   }, [state]);
 
   // The extension is rendered into the `<div>`. The `<div>` has relative

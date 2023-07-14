@@ -3,13 +3,10 @@ import ICU from "i18next-icu";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 import merge from "lodash-es/merge";
-import { getConfigInternal } from "@openmrs/esm-framework/src/internal";
-import { slugify } from "./load-modules";
-declare global {
-  interface Window {
-    i18next: i18next.i18n;
-  }
-}
+import {
+  getConfigInternal,
+  importDynamic,
+} from "@openmrs/esm-framework/src/internal";
 
 export function setupI18n() {
   window.i18next = i18next.default || i18next;
@@ -26,9 +23,13 @@ export function setupI18n() {
     attributes: true,
   });
 
+  window.i18next.on("languageChanged", () => {
+    document.documentElement.setAttribute("dir", window.i18next.dir());
+  });
+
   return window.i18next
     .use(LanguageDetector)
-    .use({
+    .use<i18next.BackendModule>({
       type: "backend",
       init() {},
       read(language, namespace, callback) {
@@ -36,47 +37,49 @@ export function setupI18n() {
           callback(Error("can't handle translation namespace"), null);
         } else if (namespace === undefined || language === undefined) {
           callback(Error(), null);
+        } else if (namespace === "@openmrs/esm-app-shell") {
+          // currently, we don't have translations in the app shell
+          getConfigInternal(namespace)
+            .then((config) => {
+              let translations = {};
+              if (config && "Translation overrides" in config) {
+                const overrides = config["Translation overrides"];
+                if (language in overrides) {
+                  translations = overrides[language];
+                }
+              }
+
+              callback(null, translations);
+            })
+            .catch((err: Error) => {
+              callback(err, null);
+            });
         } else {
-          const app: any = window[slugify(namespace)];
+          importDynamic(namespace)
+            .then((module) =>
+              Promise.all([
+                getImportPromise(module, namespace, language),
+                getConfigInternal(namespace),
+              ])
+            )
+            .then(([json, config]) => {
+              let translations = json ?? {};
 
-          if (app) {
-            if ("get" in app) {
-              app
-                .get("./start")
-                .then((start) => {
-                  Promise.all([
-                    getImportPromise(start(), namespace, language),
-                    getConfigInternal(namespace),
-                  ])
-                    .then(([json, config]) => {
-                      let translations = json ?? {};
+              if (config && "Translation overrides" in config) {
+                const overrides = config["Translation overrides"];
+                if (language in overrides) {
+                  translations = merge(translations, overrides[language]);
+                }
+              }
 
-                      if (config && "Translation overrides" in config) {
-                        const overrides = config["Translation overrides"];
-                        if (language in overrides) {
-                          translations = merge(
-                            translations,
-                            overrides[language]
-                          );
-                        }
-                      }
-
-                      callback(null, translations);
-                    })
-                    .catch((err: Error) => {
-                      callback(err, null);
-                    });
-                })
-                .catch((err: Error) => {
-                  callback(err, null);
-                });
-            }
-          }
-
-          callback(Error(`could not load app for ${namespace}`), null);
+              callback(null, translations);
+            })
+            .catch((err: Error) => {
+              callback(err, null);
+            });
         }
       },
-    } as i18next.BackendModule)
+    })
     .use(initReactI18next)
     .use(ICU)
     .init({

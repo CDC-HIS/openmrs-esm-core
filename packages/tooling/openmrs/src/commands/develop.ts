@@ -17,6 +17,7 @@ export interface DevelopArgs {
   backend: string;
   open: boolean;
   importmap: ImportmapDeclaration;
+  routes: Record<string, unknown>;
   spaPath: string;
   apiUrl: string;
   configUrls: Array<string>;
@@ -56,6 +57,13 @@ export function runDevelop(args: DevelopArgs) {
       `http://${host}:${port}${spaPath}/importmap.json`
     );
 
+  const sw = resolve(source, "service-worker.js");
+  // remove any full references to dev3.openmrs.org
+  const swContent = readFileSync(sw, "utf-8").replace(
+    /https:\/\/dev3.openmrs.org\/openmrs\/spa\//g,
+    ``
+  );
+
   const pageUrl = `http://${host}:${port}${spaPath}`;
 
   // Set up routes. Note that different middlewares have different rules
@@ -79,6 +87,18 @@ export function runDevelop(args: DevelopArgs) {
       res.contentType("application/json").send(importmap.value);
     });
   }
+
+  if (args.routes && Object.keys(args.routes).length > 0) {
+    const stringifiedRoutes = JSON.stringify(args.routes);
+    app.get(`${spaPath}/routes.registry.json`, (_, res) => {
+      res.contentType("application/json").send(stringifiedRoutes);
+    });
+  }
+
+  // Route for custom `service-worker.js` before most things
+  app.get(`${spaPath}/service-worker.js`, (_, res) => {
+    res.contentType("js").send(swContent);
+  });
 
   // Route for custom `index.html` goes above static assets
   app.get(indexHtmlPathMatcher, (_, res) =>
@@ -121,11 +141,15 @@ export function runDevelop(args: DevelopArgs) {
     if (open) {
       const open = require("open");
 
-      open(pageUrl, { wait: false }).catch(() => {
-        logWarn(
-          `Unable to open "${pageUrl}" in browser. If you are running in a headless environment, please do not use the --open flag.`
-        );
-      });
+      setTimeout(
+        () =>
+          open(pageUrl, { wait: false }).catch(() => {
+            logWarn(
+              `Unable to open "${pageUrl}" in browser. If you are running in a headless environment, please do not use the --open flag.`
+            );
+          }),
+        2000
+      );
     }
   });
 

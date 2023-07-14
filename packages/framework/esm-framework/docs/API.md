@@ -13,6 +13,7 @@
 - [getLoggedInUser](API.md#getloggedinuser)
 - [getSessionLocation](API.md#getsessionlocation)
 - [getSessionStore](API.md#getsessionstore)
+- [getVisitStore](API.md#getvisitstore)
 - [getVisitTypes](API.md#getvisittypes)
 - [getVisitsForPatient](API.md#getvisitsforpatient)
 - [makeUrl](API.md#makeurl)
@@ -20,11 +21,11 @@
 - [openmrsObservableFetch](API.md#openmrsobservablefetch)
 - [refetchCurrentUser](API.md#refetchcurrentuser)
 - [saveVisit](API.md#savevisit)
+- [setCurrentVisit](API.md#setcurrentvisit)
 - [setSessionLocation](API.md#setsessionlocation)
 - [toLocationObject](API.md#tolocationobject)
 - [toVisitTypeObject](API.md#tovisittypeobject)
 - [updateVisit](API.md#updatevisit)
-- [useCurrentPatient](API.md#usecurrentpatient)
 - [useLocations](API.md#uselocations)
 - [usePatient](API.md#usepatient)
 - [useSession](API.md#usesession)
@@ -72,6 +73,10 @@
 - [toOmrsTimeString24](API.md#toomrstimestring24)
 - [toOmrsYearlessDateFormat](API.md#toomrsyearlessdateformat)
 
+### Dynamic Loading Functions
+
+- [importDynamic](API.md#importdynamic)
+
 ### Error Handling Functions
 
 - [createErrorHandler](API.md#createerrorhandler)
@@ -92,6 +97,11 @@
 - [useConnectedExtensions](API.md#useconnectedextensions)
 - [useExtensionSlotMeta](API.md#useextensionslotmeta)
 - [useExtensionStore](API.md#useextensionstore)
+
+### Feature Flags Functions
+
+- [getFeatureFlag](API.md#getfeatureflag)
+- [registerFeatureFlag](API.md#registerfeatureflag)
 
 ### Framework Functions
 
@@ -188,7 +198,7 @@
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-patient.ts:5](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-patient.ts#L5)
+[packages/framework/esm-api/src/shared-api-objects/current-patient.ts:6](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-patient.ts#L6)
 
 ___
 
@@ -393,6 +403,18 @@ ___
 
 ___
 
+### ExtensionDefinition
+
+Ƭ **ExtensionDefinition**: { `meta?`: { `[k: string]`: `unknown`;  } ; `name`: `string` ; `offline?`: `boolean` ; `online?`: `boolean` ; `order?`: `number` ; `privileges?`: `string` \| `string`[] ; `slot?`: `string` ; `slots?`: `string`[]  } & { `component`: `string`  } \| { `component?`: `never`  }
+
+A definition of an extension as extracted from an app's routes.json
+
+#### Defined in
+
+[packages/framework/esm-globals/src/types.ts:167](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L167)
+
+___
+
 ### ExtensionProps
 
 Ƭ **ExtensionProps**: { `state?`: `Record`<`string`, `any`\> ; `wrap?`: (`slot`: `ReactNode`, `extension`: [`ExtensionData`](interfaces/ExtensionData.md)) => ``null`` \| `ReactElement`<`any`, `any`\>  } & `Omit`<`React.HTMLAttributes`<`HTMLDivElement`\>, ``"children"``\> & { `children?`: `React.ReactNode` \| (`slot`: `React.ReactNode`, `extension?`: [`ExtensionData`](interfaces/ExtensionData.md)) => `React.ReactNode`  }
@@ -413,6 +435,31 @@ ___
 
 ___
 
+### OpenmrsRoutes
+
+Ƭ **OpenmrsRoutes**: `Record`<`string`, [`OpenmrsAppRoutes`](interfaces/OpenmrsAppRoutes.md)\>
+
+This interfaces describes the format of the overall rotues.json loaded by the app shell.
+Basically, this is the same as the app routes, with each routes definition keyed by the app's name
+
+#### Defined in
+
+[packages/framework/esm-globals/src/types.ts:251](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L251)
+
+___
+
+### PageDefinition
+
+Ƭ **PageDefinition**: { `component`: `string` ; `offline?`: `boolean` ; `online?`: `boolean` ; `order?`: `number`  } & { `route`: `string` \| `boolean` ; `routeRegex?`: `never`  } \| { `route?`: `never` ; `routeRegex`: `string`  }
+
+A definition of a page extracted from an app's routes.json
+
+#### Defined in
+
+[packages/framework/esm-globals/src/types.ts:110](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L110)
+
+___
+
 ### ProvidedConfig
 
 Ƭ **ProvidedConfig**: `Object`
@@ -430,13 +477,25 @@ ___
 
 ___
 
+### RegisteredPageDefinition
+
+Ƭ **RegisteredPageDefinition**: `Omit`<[`PageDefinition`](API.md#pagedefinition), ``"order"``\> & `AppComponent` & { `order`: `number`  }
+
+A definition of a page after the app has been registered.
+
+#### Defined in
+
+[packages/framework/esm-globals/src/types.ts:161](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L161)
+
+___
+
 ### SpaEnvironment
 
 Ƭ **SpaEnvironment**: ``"production"`` \| ``"development"`` \| ``"test"``
 
 #### Defined in
 
-[packages/framework/esm-globals/src/types.ts:53](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L53)
+[packages/framework/esm-globals/src/types.ts:65](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L65)
 
 ___
 
@@ -502,7 +561,7 @@ ___
 
 ### Actions
 
-Ƭ **Actions**: `Function` \| { `[key: string]`: `Function`;  }
+Ƭ **Actions**: `Function` \| `Record`<`string`, `Function`\>
 
 #### Defined in
 
@@ -516,7 +575,7 @@ ___
 
 #### Index signature
 
-▪ [key: `string`]: `BoundAction`
+▪ [key: `string`]: (...`args`: `any`[]) => `void`
 
 #### Defined in
 
@@ -582,33 +641,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:12](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L12)
-
-___
-
-### fhir
-
-• `Const` **fhir**: `Object`
-
-The `fhir` object is replicates the API from [fhir.js](https://github.com/FHIR/fhir.js)
-that can be used to call FHIR-compliant OpenMRS APIs. See
-[the docs for fhir.js](https://github.com/FHIR/fhir.js) for more info
-and example usage.
-
-This object should be considered deprecated and may be removed from a future version
-of the framework.
-
-**`deprecated`**
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `read` | <T\>(`options`: [`FHIRRequestOptions`](interfaces/FHIRRequestOptions.md)) => `Promise`<{ `config`: [`FHIRRequestObj`](interfaces/FHIRRequestObj.md) ; `data`: `T` ; `headers`: `Headers` ; `status`: `number`  }\> |
-
-#### Defined in
-
-[packages/framework/esm-api/src/fhir.ts:45](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/fhir.ts#L45)
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:13](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L13)
 
 ___
 
@@ -618,7 +651,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/fhir.ts:5](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/fhir.ts#L5)
+[packages/framework/esm-api/src/openmrs-fetch.ts:9](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L9)
 
 ___
 
@@ -626,19 +659,31 @@ ___
 
 • `Const` **getStartedVisit**: `BehaviorSubject`<``null`` \| [`VisitItem`](interfaces/VisitItem.md)\>
 
+**`deprecated`**
+
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:75](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L75)
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:112](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L112)
+
+___
+
+### restBaseUrl
+
+• `Const` **restBaseUrl**: ``"/ws/rest/v1/"``
+
+#### Defined in
+
+[packages/framework/esm-api/src/openmrs-fetch.ts:7](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L7)
 
 ___
 
 ### sessionEndpoint
 
-• `Const` **sessionEndpoint**: ``"/ws/rest/v1/session"``
+• `Const` **sessionEndpoint**: `string`
 
 #### Defined in
 
-[packages/framework/esm-api/src/openmrs-fetch.ts:7](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L7)
+[packages/framework/esm-api/src/openmrs-fetch.ts:11](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L11)
 
 ___
 
@@ -774,24 +819,25 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-user.ts:188](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L188)
+[packages/framework/esm-api/src/shared-api-objects/current-user.ts:203](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L203)
 
 ___
 
 ### fetchCurrentPatient
 
-▸ **fetchCurrentPatient**(`patientUuid`, `contentOverrides?`): `Promise`<{ `config`: [`FHIRRequestObj`](interfaces/FHIRRequestObj.md) ; `data`: `Patient` ; `headers`: `Headers` ; `status`: `number`  }\> \| `Promise`<``null``\>
+▸ **fetchCurrentPatient**(`patientUuid`, `fetchInit?`, `includeOfflinePatients?`): `Promise`<`fhir.Patient` \| ``null``\>
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `patientUuid` | [`PatientUuid`](API.md#patientuuid) |
-| `contentOverrides?` | `Partial`<[`FHIRRequestOptions`](interfaces/FHIRRequestOptions.md)\> |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `patientUuid` | [`PatientUuid`](API.md#patientuuid) | `undefined` |
+| `fetchInit?` | [`FetchConfig`](interfaces/FetchConfig.md) | `undefined` |
+| `includeOfflinePatients` | `boolean` | `true` |
 
 #### Returns
 
-`Promise`<{ `config`: [`FHIRRequestObj`](interfaces/FHIRRequestObj.md) ; `data`: `Patient` ; `headers`: `Headers` ; `status`: `number`  }\> \| `Promise`<``null``\>
+`Promise`<`fhir.Patient` \| ``null``\>
 
 #### Defined in
 
@@ -902,7 +948,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-user.ts:212](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L212)
+[packages/framework/esm-api/src/shared-api-objects/current-user.ts:227](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L227)
 
 ___
 
@@ -916,21 +962,35 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-user.ts:230](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L230)
+[packages/framework/esm-api/src/shared-api-objects/current-user.ts:245](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L245)
 
 ___
 
 ### getSessionStore
 
-▸ **getSessionStore**(): `Store`<[`SessionStore`](API.md#sessionstore)\>
+▸ **getSessionStore**(): `StoreApi`<[`SessionStore`](API.md#sessionstore)\>
 
 #### Returns
 
-`Store`<[`SessionStore`](API.md#sessionstore)\>
+`StoreApi`<[`SessionStore`](API.md#sessionstore)\>
 
 #### Defined in
 
 [packages/framework/esm-api/src/shared-api-objects/current-user.ts:105](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L105)
+
+___
+
+### getVisitStore
+
+▸ **getVisitStore**(): `StoreApi`<[`VisitStoreState`](interfaces/VisitStoreState.md)\>
+
+#### Returns
+
+`StoreApi`<[`VisitStoreState`](interfaces/VisitStoreState.md)\>
+
+#### Defined in
+
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:31](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L31)
 
 ___
 
@@ -966,7 +1026,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:21](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L21)
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:57](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L57)
 
 ___
 
@@ -995,7 +1055,7 @@ makeUrl('/foo/bar');
 
 #### Defined in
 
-[packages/framework/esm-api/src/openmrs-fetch.ts:19](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L19)
+[packages/framework/esm-api/src/openmrs-fetch.ts:23](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L23)
 
 ___
 
@@ -1019,7 +1079,7 @@ request headers, authentication, authorization, and the API urls.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `path` | `string` | A string url to make the request to. Note that the   openmrs base url (by default `/openmrs`) will be automatically   prepended to the URL, so there is no need to include it. |
-| `fetchInit` | `FetchConfig` | A [fetch init object](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).   Note that the `body` property does not need to be `JSON.stringify()`ed   because openmrsFetch will do that for you. |
+| `fetchInit` | [`FetchConfig`](interfaces/FetchConfig.md) | A [fetch init object](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).   Note that the `body` property does not need to be `JSON.stringify()`ed   because openmrsFetch will do that for you. |
 
 #### Returns
 
@@ -1062,7 +1122,7 @@ free up memory and network resources and to prevent race conditions.
 
 #### Defined in
 
-[packages/framework/esm-api/src/openmrs-fetch.ts:72](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L72)
+[packages/framework/esm-api/src/openmrs-fetch.ts:83](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L83)
 
 ___
 
@@ -1086,7 +1146,7 @@ preferred or more convenient than a promise.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `url` | `string` | See [openmrsFetch](API.md#openmrsfetch) |
-| `fetchInit` | `FetchConfig` | See [openmrsFetch](API.md#openmrsfetch) |
+| `fetchInit` | [`FetchConfig`](interfaces/FetchConfig.md) | See [openmrsFetch](API.md#openmrsfetch) |
 
 #### Returns
 
@@ -1113,7 +1173,7 @@ To cancel the network request, simply call `subscription.unsubscribe();`
 
 #### Defined in
 
-[packages/framework/esm-api/src/openmrs-fetch.ts:251](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L251)
+[packages/framework/esm-api/src/openmrs-fetch.ts:283](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/openmrs-fetch.ts#L283)
 
 ___
 
@@ -1139,7 +1199,7 @@ refetchCurrentUser()
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-user.ts:163](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L163)
+[packages/framework/esm-api/src/shared-api-objects/current-user.ts:178](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L178)
 
 ___
 
@@ -1160,7 +1220,28 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:46](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L46)
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:82](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L82)
+
+___
+
+### setCurrentVisit
+
+▸ **setCurrentVisit**(`patientUuid`, `visitUuid`): `void`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `patientUuid` | `string` |
+| `visitUuid` | `string` |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:35](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L35)
 
 ___
 
@@ -1181,7 +1262,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-user.ts:239](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L239)
+[packages/framework/esm-api/src/shared-api-objects/current-user.ts:254](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L254)
 
 ___
 
@@ -1243,32 +1324,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:60](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L60)
-
-___
-
-### useCurrentPatient
-
-▸ **useCurrentPatient**(`patientUuid?`): [`boolean`, `NullablePatient`, [`PatientUuid`](API.md#patientuuid), `Error` \| ``null``]
-
-This React hook returns the current patient, as specified by the current route. It returns
-all the information needed to render a loading state, error state, and normal/success state.
-
-**`deprecated`** Use [usePatient](API.md#usepatient) instead.
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `patientUuid` | [`PatientUuid`](API.md#patientuuid) |
-
-#### Returns
-
-[`boolean`, `NullablePatient`, [`PatientUuid`](API.md#patientuuid), `Error` \| ``null``]
-
-#### Defined in
-
-[packages/framework/esm-react-utils/src/useCurrentPatient.ts:83](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useCurrentPatient.ts#L83)
+[packages/framework/esm-api/src/shared-api-objects/visit-utils.ts:96](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/visit-utils.ts#L96)
 
 ___
 
@@ -1342,7 +1398,7 @@ ___
 
 ### useVisit
 
-▸ **useVisit**(`patientUuid`): `VisitReturnType`
+▸ **useVisit**(`patientUuid`): [`VisitReturnType`](interfaces/VisitReturnType.md)
 
 This React hook returns a visit object. If the `patientUuid` is provided
 as a parameter, then the currentVisit, error and mutate function
@@ -1356,13 +1412,13 @@ for that patient visit is returned.
 
 #### Returns
 
-`VisitReturnType`
+[`VisitReturnType`](interfaces/VisitReturnType.md)
 
 Object {`error` `isValidating`, `currentVisit`, `mutate`}
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useVisit.ts:29](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useVisit.ts#L29)
+[packages/framework/esm-react-utils/src/useVisit.ts:32](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useVisit.ts#L32)
 
 ___
 
@@ -1399,7 +1455,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-api/src/shared-api-objects/current-user.ts:195](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L195)
+[packages/framework/esm-api/src/shared-api-objects/current-user.ts:210](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-api/src/shared-api-objects/current-user.ts#L210)
 
 ___
 
@@ -2084,6 +2140,43 @@ Formats the input as a date string using the format "DD-MMM".
 
 ___
 
+## Dynamic Loading Functions
+
+### importDynamic
+
+▸ **importDynamic**<`T`\>(`jsPackage`, `share?`, `options?`): `Promise`<`T`\>
+
+Loads the named export from a named package. This might be used like:
+
+```js
+const { someComponent } = importDynamic("@openmrs/esm-template-app")
+```
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | `any` |
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `jsPackage` | `string` | `undefined` | The package to load the export from |
+| `share` | `string` | `"./start"` | Indicates the name of the shared module; this is an advanced feature if the package you are loading   doesn't use the default OpenMRS shared module name "./start" |
+| `options?` | `Object` | `undefined` | - |
+| `options.importMap?` | [`ImportMap`](interfaces/ImportMap.md) | `undefined` |  |
+
+#### Returns
+
+`Promise`<`T`\>
+
+#### Defined in
+
+[packages/framework/esm-dynamic-loading/src/dynamic-loading.ts:29](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-dynamic-loading/src/dynamic-loading.ts#L29)
+
+___
+
 ## Error Handling Functions
 
 ### createErrorHandler
@@ -2297,15 +2390,14 @@ ___
 
 ### getExtensionStore
 
-▸ **getExtensionStore**(): `Store`<[`ExtensionStore`](interfaces/ExtensionStore.md)\>
+▸ **getExtensionStore**(): `StoreApi`<[`ExtensionStore`](interfaces/ExtensionStore.md)\>
 
-This returns a [store](https://github.com/developit/unistore#store)
-that modules can use to get information about the state of the
-extension system.
+This returns a store that modules can use to get information about the
+state of the extension system.
 
 #### Returns
 
-`Store`<[`ExtensionStore`](interfaces/ExtensionStore.md)\>
+`StoreApi`<[`ExtensionStore`](interfaces/ExtensionStore.md)\>
 
 #### Defined in
 
@@ -2329,7 +2421,7 @@ that registered an extension component for this slot.
 | `extensionSlotName` | `string` |
 | `extensionSlotModuleName` | `string` |
 | `extensionId` | `string` |
-| `renderFunction` | (`lifecycle`: [`Lifecycle`](interfaces/Lifecycle.md)) => [`Lifecycle`](interfaces/Lifecycle.md) |
+| `renderFunction` | (`application`: `ParcelConfig`<`CustomProps`\>) => `ParcelConfig`<`CustomProps`\> |
 | `additionalProps` | `Record`<`string`, `any`\> |
 
 #### Returns
@@ -2338,7 +2430,7 @@ that registered an extension component for this slot.
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/render.ts:17](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/render.ts#L17)
+[packages/framework/esm-extensions/src/render.ts:18](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/render.ts#L18)
 
 ___
 
@@ -2484,6 +2576,59 @@ ___
 #### Defined in
 
 [packages/framework/esm-react-utils/src/useExtensionStore.ts:5](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useExtensionStore.ts#L5)
+
+___
+
+## Feature Flags Functions
+
+### getFeatureFlag
+
+▸ **getFeatureFlag**(`flagName`): `boolean`
+
+Use this function to access the current value of the feature flag
+
+If you are using React, use `useFeatureFlag` instead.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `flagName` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[packages/framework/esm-feature-flags/src/feature-flags.ts:83](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-feature-flags/src/feature-flags.ts#L83)
+
+___
+
+### registerFeatureFlag
+
+▸ **registerFeatureFlag**(`flagName`, `label`, `description`): `void`
+
+This function creates a feature flag. Call it in top-level code anywhere. It will
+not reset whether the flag is enabled or not, so it's safe to call it multiple times.
+Once a feature flag is created, it will appear with a toggle in the Implementer Tools.
+It can then be used to turn on or off features in the code.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `flagName` | `string` | A code-friendly name for the flag, which will be used to reference it in code |
+| `label` | `string` | A human-friendly name which will be displayed in the Implementer Tools |
+| `description` | `string` | An explanation of what the flag does, which will be displayed in the Implementer Tools |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/framework/esm-feature-flags/src/feature-flags.ts:62](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-feature-flags/src/feature-flags.ts#L62)
 
 ___
 
@@ -2982,13 +3127,13 @@ ___
 
 ### getOfflinePatientDataStore
 
-▸ **getOfflinePatientDataStore**(): `Store`<[`OfflinePatientDataSyncStore`](interfaces/OfflinePatientDataSyncStore.md)\>
+▸ **getOfflinePatientDataStore**(): `StoreApi`<[`OfflinePatientDataSyncStore`](interfaces/OfflinePatientDataSyncStore.md)\>
 
 **`deprecated`** Will be removed once all modules have been migrated to the new dynamic offline data API.
 
 #### Returns
 
-`Store`<[`OfflinePatientDataSyncStore`](interfaces/OfflinePatientDataSyncStore.md)\>
+`StoreApi`<[`OfflinePatientDataSyncStore`](interfaces/OfflinePatientDataSyncStore.md)\>
 
 #### Defined in
 
@@ -3519,26 +3664,26 @@ ___
 
 ### createGlobalStore
 
-▸ **createGlobalStore**<`TState`\>(`name`, `initialState`): `Store`<`TState`\>
+▸ **createGlobalStore**<`T`\>(`name`, `initialState`): `StoreApi`<`T`\>
 
-Creates a Unistore [store](https://github.com/developit/unistore#store).
+Creates a Zustand store.
 
 #### Type parameters
 
 | Name |
 | :------ |
-| `TState` |
+| `T` |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `name` | `string` | A name by which the store can be looked up later.    Must be unique across the entire application. |
-| `initialState` | `TState` | An object which will be the initial state of the store. |
+| `initialState` | `T` | An object which will be the initial state of the store. |
 
 #### Returns
 
-`Store`<`TState`\>
+`StoreApi`<`T`\>
 
 The newly created store.
 
@@ -3564,7 +3709,7 @@ Avoid this; generally prefer to have clients use `useStore(yourStore)`
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 
 #### Returns
 
@@ -3602,17 +3747,17 @@ Avoid this; generally prefer to have clients use `useStore(yourStore)`
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/createUseStore.ts:23](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/createUseStore.ts#L23)
+[packages/framework/esm-react-utils/src/createUseStore.ts:33](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/createUseStore.ts#L33)
 
 ___
 
 ### getAppState
 
-▸ **getAppState**(): `Store`<[`AppState`](interfaces/AppState.md)\>
+▸ **getAppState**(): `StoreApi`<[`AppState`](interfaces/AppState.md)\>
 
 #### Returns
 
-`Store`<[`AppState`](interfaces/AppState.md)\>
+`StoreApi`<[`AppState`](interfaces/AppState.md)\>
 
 The [store](https://github.com/developit/unistore#store) named `app`.
 
@@ -3624,27 +3769,27 @@ ___
 
 ### getGlobalStore
 
-▸ **getGlobalStore**<`TState`\>(`name`, `fallbackState?`): `Store`<`TState`\>
+▸ **getGlobalStore**<`T`\>(`name`, `fallbackState?`): `StoreApi`<`T`\>
 
-Returns the existing [store](https://github.com/developit/unistore#store) named `name`,
+Returns the existing store named `name`,
 or creates a new store named `name` if none exists.
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `TState` | `any` |
+| Name |
+| :------ |
+| `T` |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `name` | `string` | The name of the store to look up. |
-| `fallbackState?` | `TState` | The initial value of the new store if no store named `name` exists. |
+| `fallbackState?` | `T` | The initial value of the new store if no store named `name` exists. |
 
 #### Returns
 
-`Store`<`TState`\>
+`StoreApi`<`T`\>
 
 The found or newly created store.
 
@@ -3656,7 +3801,7 @@ ___
 
 ### subscribeTo
 
-▸ **subscribeTo**<`T`, `U`\>(`store`, `select`, `handle`): `Unsubscribe`
+▸ **subscribeTo**<`T`, `U`\>(`store`, `select`, `handle`): () => `void`
 
 #### Type parameters
 
@@ -3669,13 +3814,19 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 | `select` | (`state`: `T`) => `U` |
 | `handle` | (`subState`: `U`) => `void` |
 
 #### Returns
 
-`Unsubscribe`
+`fn`
+
+▸ (): `void`
+
+##### Returns
+
+`void`
 
 #### Defined in
 
@@ -3698,7 +3849,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 
 #### Returns
 
@@ -3706,7 +3857,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:23](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L23)
+[packages/framework/esm-react-utils/src/useStore.ts:33](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L33)
 
 ▸ **useStore**<`T`, `U`\>(`store`, `select`): `U`
 
@@ -3721,7 +3872,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 | `select` | (`state`: `T`) => `U` |
 
 #### Returns
@@ -3730,7 +3881,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:24](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L24)
+[packages/framework/esm-react-utils/src/useStore.ts:34](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L34)
 
 ▸ **useStore**<`T`, `U`\>(`store`, `select`, `actions`): `T` & [`BoundActions`](API.md#boundactions)
 
@@ -3745,7 +3896,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 | `select` | `undefined` |
 | `actions` | [`Actions`](API.md#actions) |
 
@@ -3755,7 +3906,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:25](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L25)
+[packages/framework/esm-react-utils/src/useStore.ts:35](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L35)
 
 ▸ **useStore**<`T`, `U`\>(`store`, `select`, `actions`): `U` & [`BoundActions`](API.md#boundactions)
 
@@ -3770,7 +3921,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 | `select` | (`state`: `T`) => `U` |
 | `actions` | [`Actions`](API.md#actions) |
 
@@ -3780,7 +3931,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:30](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L30)
+[packages/framework/esm-react-utils/src/useStore.ts:40](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L40)
 
 ___
 
@@ -3798,7 +3949,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `store` | `Store`<`T`\> |
+| `store` | `StoreApi`<`T`\> |
 | `actions` | [`Actions`](API.md#actions) |
 
 #### Returns
@@ -3807,7 +3958,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:52](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L52)
+[packages/framework/esm-react-utils/src/useStore.ts:61](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L61)
 
 ___
 
@@ -3871,7 +4022,7 @@ Displays an actionable notification in the UI.
 
 #### Defined in
 
-[packages/framework/esm-styleguide/src/notifications/index.tsx:88](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-styleguide/src/notifications/index.tsx#L88)
+[packages/framework/esm-styleguide/src/notifications/index.tsx:94](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-styleguide/src/notifications/index.tsx#L94)
 
 ___
 
@@ -3925,7 +4076,7 @@ Displays an inline notification in the UI.
 
 #### Defined in
 
-[packages/framework/esm-styleguide/src/notifications/index.tsx:48](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-styleguide/src/notifications/index.tsx#L48)
+[packages/framework/esm-styleguide/src/notifications/index.tsx:50](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-styleguide/src/notifications/index.tsx#L50)
 
 ___
 

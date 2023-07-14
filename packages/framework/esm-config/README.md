@@ -15,4 +15,3 @@ PRs welcome! See
 [OpenMRS Frontend RFC-20](https://github.com/openmrs/openmrs-rfc-frontend/blob/master/text/0020-contributing-guidelines.md#contributing-guidelines)
 for guidelines about contributing.
 
-Maintainer: Brandon Istenes (bistenes@pih.org)

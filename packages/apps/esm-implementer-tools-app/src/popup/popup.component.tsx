@@ -3,13 +3,12 @@ import { Button, ContentSwitcher, Switch } from "@carbon/react";
 import { Close } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import { Configuration } from "../configuration/configuration.component";
-import {
-  FrontendModule,
-  FrontendModules,
-} from "../frontend-modules/frontend-modules.component";
-import { ModuleDiagnostics } from "../backend-dependencies/backend-dependencies.component";
+import type { FrontendModule } from "../types";
+import { FrontendModules } from "../frontend-modules/frontend-modules.component";
+import { BackendDependencies } from "../backend-dependencies/backend-dependencies.component";
 import type { ResolvedDependenciesModule } from "../backend-dependencies/openmrs-backend-dependencies";
 import styles from "./popup.styles.scss";
+import { FeatureFlags } from "../feature-flags/feature-flags.component";
 
 interface DevToolsPopupProps {
   close(): void;
@@ -30,10 +29,12 @@ export default function Popup({
       return <Configuration />;
     } else if (activeTab == 1) {
       return <FrontendModules frontendModules={frontendModules} />;
+    } else if (activeTab == 2) {
+      return <BackendDependencies backendDependencies={backendDependencies} />;
     } else {
-      return <ModuleDiagnostics frontendModules={backendDependencies} />;
+      return <FeatureFlags />;
     }
-  }, [activeTab]);
+  }, [activeTab, backendDependencies, frontendModules]);
 
   return (
     <div className={styles.popup}>
@@ -55,6 +56,10 @@ export default function Popup({
             <Switch
               name="backend-modules-tab"
               text={t("backendModules", "Backend Modules")}
+            />
+            <Switch
+              name="feature-flags-tab"
+              text={t("featureFlags", "Feature Flags")}
             />
           </ContentSwitcher>
         </div>
