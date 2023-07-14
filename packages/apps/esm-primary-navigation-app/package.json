@@ -49,7 +49,7 @@
     "rxjs": "6.x"
   },
   "devDependencies": {
-    "@openmrs/esm-framework": "^4.2.0",
+    "@openmrs/esm-framework": "next",
     "@openmrs/webpack-config": "^4.2.0",
     "jest": "^28.1.0",
     "react": "^18.1.0",
