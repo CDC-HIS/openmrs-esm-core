@@ -28,19 +28,19 @@ declare global {
      */
     initializeSpa(config: SpaConfig): void;
     /**
-     * Gets the API base path.
+     * Gets the API base path, e.g. /openmrs
      */
     openmrsBase: string;
     /**
-     * Gets the SPA base path.
+     * Gets the SPA base path, e.g. /openmrs/spa
      */
     spaBase: string;
     /**
-     * Gets the determined SPA environment.
+     * Set by the app shell. Indicates whether the app shell is running in production, development, or test mode.
      */
     spaEnv: SpaEnvironment;
     /**
-     * Gets the published SPA version.
+     * The build number of the app shell. Set when the app shell is built by webpack.
      */
     spaVersion?: string;
     /**
@@ -190,9 +190,13 @@ export type ExtensionDefinition = {
    */
   order?: number;
   /**
-  
+   * The user must have ANY of these privileges to see this extension.
    */
   privileges?: string | Array<string>;
+  /**
+   * If supplied, the extension will only be rendered when this feature flag is enabled.
+   */
+  featureFlag?: string;
   /**
    * Meta describes any properties that are passed down to the extension when it is loaded
    */

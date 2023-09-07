@@ -17,7 +17,6 @@ export {
   validators,
   validator,
 } from "@openmrs/esm-config";
-export { isDesktop } from "@openmrs/esm-react-utils";
 
 window.i18next = { ...window.i18next, language: "en" };
 
@@ -89,30 +88,17 @@ export function createGlobalStore<T>(
   name: string,
   initialState: T
 ): StoreApi<T> {
-  const available = availableStores[name];
+  // We ignore whether there's already a store with this name so that tests
+  // don't have to worry about clearing old stores before re-creating them.
+  const store = createStore<T>()(() => initialState);
+  initialStates[name] = initialState;
 
-  if (available) {
-    if (available.active) {
-      console.error(
-        "Cannot override an existing store. Make sure that stores are only created once."
-      );
-    } else {
-      available.value.setState(initialState, true);
-    }
+  availableStores[name] = {
+    value: store,
+    active: true,
+  };
 
-    available.active = true;
-    return available.value;
-  } else {
-    const store = createStore<T>()(() => initialState);
-    initialStates[name] = initialState;
-
-    availableStores[name] = {
-      value: store,
-      active: true,
-    };
-
-    return instrumentedStore(name, store);
-  }
+  return instrumentedStore(name, store);
 }
 
 export function getGlobalStore<T>(
@@ -269,6 +255,8 @@ export const useLayoutType = jest.fn(() => "desktop");
 
 export const useExtensionSlotMeta = jest.fn(() => ({}));
 
+export const useConnectedExtensions = jest.fn(() => []);
+
 export const UserHasAccess = jest.fn().mockImplementation((props: any) => {
   return props.children;
 });
@@ -282,29 +270,12 @@ export const useExtensionStore = getExtensionStore();
 
 export const useFeatureFlag = jest.fn().mockReturnValue(true);
 
-const defaultSelect = (x) => x;
-export function useStore<T = any>(
-  store: StoreApi<T>,
-  select = defaultSelect,
-  actions = {}
-) {
-  const state = select(store.getState());
-  return { ...state, ...actions };
-}
-
-export function useStoreWithActions<T>(
-  store: StoreApi<T>,
-  actions: Function | { [key: string]: Function }
-): T & { [key: string]: (...args: any[]) => void } {
-  return useStore(store, defaultSelect, actions);
-}
-
-export function createUseStore<T = any>(store: StoreApi<T>) {
-  return (actions: Function | Record<string, Function>) => {
-    const state = store.getState();
-    return { ...state, ...actions };
-  };
-}
+export {
+  isDesktop,
+  useStore,
+  useStoreWithActions,
+  createUseStore,
+} from "@openmrs/esm-react-utils";
 
 export const usePagination = jest.fn().mockImplementation(() => ({
   currentPage: 1,
@@ -317,6 +288,8 @@ export const useVisit = jest.fn().mockReturnValue({
   mutate: jest.fn(),
   isValidating: true,
   currentVisit: null,
+  activeVisit: null,
+  currentVisitIsRetrospective: false,
 });
 
 export const useVisitTypes = jest.fn(() => []);

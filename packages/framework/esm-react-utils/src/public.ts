@@ -1,6 +1,5 @@
 export { type ExtensionData } from "./ComponentContext";
 export * from "./ConfigurableLink";
-export * from "./createUseStore";
 export * from "./Extension";
 export * from "./ExtensionSlot";
 export * from "./getLifecycle";
@@ -13,6 +12,7 @@ export * from "./useConnectivity";
 export * from "./usePatient";
 export * from "./useExtensionSlotMeta";
 export * from "./useExtensionStore";
+export * from "./useFeatureFlag";
 export * from "./useLayoutType";
 export * from "./useLocations";
 export * from "./useOnClickOutside";
