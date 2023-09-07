@@ -22,6 +22,7 @@ export interface ExtensionRegistration {
   online?: boolean;
   offline?: boolean;
   privileges?: string | Array<string>;
+  featureFlag?: string;
 }
 
 export interface ExtensionInfo extends ExtensionRegistration {
@@ -81,11 +82,13 @@ export interface AssignedExtension {
   config: ConfigObject | null;
   online?: boolean | object;
   offline?: boolean | object;
+  featureFlag?: string;
 }
 
 export interface ConnectedExtension {
   id: string;
   name: string;
+  moduleName: string;
   meta: ExtensionMeta;
   /** The extension's config. Note that this will be `null` until the slot is mounted. */
   config: ConfigObject | null;

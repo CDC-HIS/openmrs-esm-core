@@ -216,7 +216,17 @@ module.exports = (env, argv = {}) => {
     module: {
       rules: [
         {
+          test: /openmrs-esm-styleguide\.css$/,
+          use: [
+            isProd
+              ? { loader: require.resolve(MiniCssExtractPlugin.loader) }
+              : { loader: require.resolve("style-loader") },
+            { loader: require.resolve("css-loader") },
+          ],
+        },
+        {
           test: /\.s?css$/,
+          exclude: [/openmrs-esm-styleguide\.css$/],
           use: [
             isProd
               ? { loader: require.resolve(MiniCssExtractPlugin.loader) }
@@ -293,7 +303,8 @@ module.exports = (env, argv = {}) => {
           openmrsConfigUrls,
           openmrsCoreImportmap:
             appPatterns.length > 0 && JSON.stringify(coreImportmap),
-          openmrsCoreRoutes: coreRoutes && JSON.stringify(coreRoutes),
+          openmrsCoreRoutes:
+            Object.keys(coreRoutes).length > 0 && JSON.stringify(coreRoutes),
         },
       }),
       new CopyWebpackPlugin({

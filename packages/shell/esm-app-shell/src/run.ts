@@ -2,7 +2,6 @@ import { start, triggerAppChange } from "single-spa";
 import {
   setupApiModule,
   renderLoadingSpinner,
-  createAppState,
   Config,
   provide,
   showNotification,
@@ -142,7 +141,8 @@ async function preloadScripts() {
   ]);
 
   window.installedModules.map(async ([module]) => {
-    importDynamic(module, undefined, { importMap });
+    // we simply swallow the error here since this is only a preload
+    importDynamic(module, undefined, { importMap }).catch();
   });
 }
 
@@ -356,7 +356,6 @@ export function run(configUrls: Array<string>, offline: boolean) {
   showModals();
   showNotifications();
   showActionableNotifications();
-  createAppState({});
   subscribeNotificationShown(showNotification);
   subscribeActionableNotificationShown(showActionableNotification);
   subscribeToastShown(showToast);

@@ -102,6 +102,7 @@
 
 - [getFeatureFlag](API.md#getfeatureflag)
 - [registerFeatureFlag](API.md#registerfeatureflag)
+- [useFeatureFlag](API.md#usefeatureflag)
 
 ### Framework Functions
 
@@ -158,7 +159,6 @@
 
 - [createGlobalStore](API.md#createglobalstore)
 - [createUseStore](API.md#createusestore)
-- [getAppState](API.md#getappstate)
 - [getGlobalStore](API.md#getglobalstore)
 - [subscribeTo](API.md#subscribeto)
 - [useStore](API.md#usestore)
@@ -284,7 +284,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:140](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L140)
+[packages/framework/esm-utils/src/omrs-dates.ts:141](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L141)
 
 ___
 
@@ -298,12 +298,13 @@ ___
 | :------ | :------ | :------ |
 | `day` | `boolean` | Whether to include the day number |
 | `mode` | [`FormatDateMode`](API.md#formatdatemode) | - `standard`: "03 Feb 2022" - `wide`:     "03 — Feb — 2022" |
+| `noToday` | `boolean` | Disables the special handling of dates that are today. If false (the default), then dates that are today will be formatted as "Today" in the locale language. If true, then dates that are today will be formatted the same as all other dates. |
 | `time` | `boolean` \| ``"for today"`` | Whether the time should be included in the output always (`true`), never (`false`), or only when the input date is today (`for today`). |
 | `year` | `boolean` | Whether to include the year |
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:142](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L142)
+[packages/framework/esm-utils/src/omrs-dates.ts:143](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L143)
 
 ___
 
@@ -405,7 +406,7 @@ ___
 
 ### ExtensionDefinition
 
-Ƭ **ExtensionDefinition**: { `meta?`: { `[k: string]`: `unknown`;  } ; `name`: `string` ; `offline?`: `boolean` ; `online?`: `boolean` ; `order?`: `number` ; `privileges?`: `string` \| `string`[] ; `slot?`: `string` ; `slots?`: `string`[]  } & { `component`: `string`  } \| { `component?`: `never`  }
+Ƭ **ExtensionDefinition**: { `featureFlag?`: `string` ; `meta?`: { `[k: string]`: `unknown`;  } ; `name`: `string` ; `offline?`: `boolean` ; `online?`: `boolean` ; `order?`: `number` ; `privileges?`: `string` \| `string`[] ; `slot?`: `string` ; `slots?`: `string`[]  } & { `component`: `string`  } \| { `component?`: `never`  }
 
 A definition of an extension as extracted from an app's routes.json
 
@@ -421,7 +422,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/Extension.tsx:13](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/Extension.tsx#L13)
+[packages/framework/esm-react-utils/src/Extension.tsx:14](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/Extension.tsx#L14)
 
 ___
 
@@ -444,7 +445,7 @@ Basically, this is the same as the app routes, with each routes definition keyed
 
 #### Defined in
 
-[packages/framework/esm-globals/src/types.ts:251](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L251)
+[packages/framework/esm-globals/src/types.ts:255](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-globals/src/types.ts#L255)
 
 ___
 
@@ -559,13 +560,50 @@ ___
 
 ## Store Type Aliases
 
-### Actions
+### ActionFunction
 
-Ƭ **Actions**: `Function` \| `Record`<`string`, `Function`\>
+Ƭ **ActionFunction**<`T`\>: (`state`: `T`, ...`args`: `any`[]) => `Partial`<`T`\>
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `T` |
+
+#### Type declaration
+
+▸ (`state`, ...`args`): `Partial`<`T`\>
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `state` | `T` |
+| `...args` | `any`[] |
+
+##### Returns
+
+`Partial`<`T`\>
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/createUseStore.ts:5](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/createUseStore.ts#L5)
+[packages/framework/esm-react-utils/src/useStore.ts:6](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L6)
+
+___
+
+### Actions
+
+Ƭ **Actions**<`T`\>: (`store`: `StoreApi`<`T`\>) => `Record`<`string`, [`ActionFunction`](API.md#actionfunction)<`T`\>\> \| `Record`<`string`, [`ActionFunction`](API.md#actionfunction)<`T`\>\>
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `T` |
+
+#### Defined in
+
+[packages/framework/esm-react-utils/src/useStore.ts:7](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L7)
 
 ___
 
@@ -579,7 +617,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/createUseStore.ts:6](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/createUseStore.ts#L6)
+[packages/framework/esm-react-utils/src/useStore.ts:10](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L10)
 
 ___
 
@@ -776,7 +814,7 @@ and *must* only be used once within that `<ExtensionSlot>`.
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/Extension.tsx:35](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/Extension.tsx#L35)
+[packages/framework/esm-react-utils/src/Extension.tsx:36](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/Extension.tsx#L36)
 
 ___
 
@@ -1400,9 +1438,21 @@ ___
 
 ▸ **useVisit**(`patientUuid`): [`VisitReturnType`](interfaces/VisitReturnType.md)
 
-This React hook returns a visit object. If the `patientUuid` is provided
-as a parameter, then the currentVisit, error and mutate function
-for that patient visit is returned.
+This React hook returns visit information if the patient UUID is not null. There are
+potentially two relevant visits at a time: "active" and "current".
+
+The active visit is the most recent visit without an end date. The presence of an active
+visit generally means that the patient is in the facility.
+
+The current visit is the active visit, unless a retrospective visit has been selected.
+If there is no active visit and no selected retrospective visit, then there is no
+current visit. If there is no active visit but there is a retrospective visit, then
+the retrospective visit is the current visit. `currentVisitIsRetrospective` tells you
+whether the current visit is a retrospective visit.
+
+The active visit and current visit require two separate API calls. `error` contains
+the error from either one, if there is an error. `isValidating` is true if either
+API call is in progress. `mutate` refreshes the data from both API calls.
 
 #### Parameters
 
@@ -1414,11 +1464,9 @@ for that patient visit is returned.
 
 [`VisitReturnType`](interfaces/VisitReturnType.md)
 
-Object {`error` `isValidating`, `currentVisit`, `mutate`}
-
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useVisit.ts:32](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useVisit.ts#L32)
+[packages/framework/esm-react-utils/src/useVisit.ts:45](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useVisit.ts#L45)
 
 ___
 
@@ -1667,7 +1715,7 @@ ___
 
 ### useConfig
 
-▸ **useConfig**<`T`\>(): `T`
+▸ **useConfig**<`T`\>(`options?`): `T`
 
 Use this React Hook to obtain your module's configuration.
 
@@ -1675,7 +1723,13 @@ Use this React Hook to obtain your module's configuration.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | `Omit`<[`ConfigObject`](interfaces/ConfigObject.md), ``"Display conditions"`` \| ``"Translation overrides"``\> |
+| `T` | `Record`<`string`, `any`\> |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `options?` | `UseConfigOptions` | Additional options that can be passed to useConfig() |
 
 #### Returns
 
@@ -1683,7 +1737,7 @@ Use this React Hook to obtain your module's configuration.
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useConfig.ts:163](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useConfig.ts#L163)
+[packages/framework/esm-react-utils/src/useConfig.ts:171](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useConfig.ts#L171)
 
 ___
 
@@ -1835,8 +1889,10 @@ Default options:
  - time: "for today",
  - day: true,
  - year: true
+ - noToday: false
 
 If the date is today then "Today" is produced (in the locale language).
+This behavior can be disabled with `noToday: true`.
 
 When time is included, it is appended with a comma and a space. This
 agrees with the output of `Date.prototype.toLocaleString` for *most*
@@ -1857,7 +1913,7 @@ TODO: Shouldn't throw on null input
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:184](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L184)
+[packages/framework/esm-utils/src/omrs-dates.ts:195](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L195)
 
 ___
 
@@ -1886,7 +1942,7 @@ output of `Date.prototype.toLocaleString` for *most* locales.
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:251](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L251)
+[packages/framework/esm-utils/src/omrs-dates.ts:262](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L262)
 
 ___
 
@@ -1909,7 +1965,7 @@ Formats the input as a time, according to the current locale.
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:235](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L235)
+[packages/framework/esm-utils/src/omrs-dates.ts:246](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L246)
 
 ___
 
@@ -1917,7 +1973,7 @@ ___
 
 ▸ **isOmrsDateStrict**(`omrsPayloadString`): `boolean`
 
-This function is STRICT on checking whether a date string is the openmrs format.
+This function checks whether a date string is the OpenMRS ISO format.
 The format should be YYYY-MM-DDTHH:mm:ss.SSSZZ
 
 #### Parameters
@@ -1975,7 +2031,7 @@ Uses `dayjs(dateString)`.
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:136](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L136)
+[packages/framework/esm-utils/src/omrs-dates.ts:137](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L137)
 
 ___
 
@@ -1983,7 +2039,8 @@ ___
 
 ▸ **toDateObjectStrict**(`omrsDateString`): `Date` \| ``null``
 
-Converts the object to a date object if it is a valid ISO date time string.
+Converts the object to a date object if it is an OpenMRS ISO date time string.
+Otherwise returns null.
 
 #### Parameters
 
@@ -1997,7 +2054,7 @@ Converts the object to a date object if it is a valid ISO date time string.
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:71](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L71)
+[packages/framework/esm-utils/src/omrs-dates.ts:72](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L72)
 
 ___
 
@@ -2021,7 +2078,7 @@ Formats the input as a date string. By default the format "YYYY-MMM-DD" is used.
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:128](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L128)
+[packages/framework/esm-utils/src/omrs-dates.ts:129](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L129)
 
 ___
 
@@ -2044,7 +2101,7 @@ Formats the input as a date string using the format "DD - MMM - YYYY".
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:112](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L112)
+[packages/framework/esm-utils/src/omrs-dates.ts:113](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L113)
 
 ___
 
@@ -2052,7 +2109,7 @@ ___
 
 ▸ **toOmrsIsoString**(`date`, `toUTC?`): `string`
 
-Formats the input as a date time string using the format "YYYY-MM-DDTHH:mm:ss.SSSZZ".
+Formats the input to OpenMRS ISO format: "YYYY-MM-DDTHH:mm:ss.SSSZZ".
 
 #### Parameters
 
@@ -2067,7 +2124,7 @@ Formats the input as a date time string using the format "YYYY-MM-DDTHH:mm:ss.SS
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:82](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L82)
+[packages/framework/esm-utils/src/omrs-dates.ts:83](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L83)
 
 ___
 
@@ -2090,7 +2147,7 @@ Formats the input as a time string using the format "HH:mm A".
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:104](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L104)
+[packages/framework/esm-utils/src/omrs-dates.ts:105](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L105)
 
 ___
 
@@ -2113,7 +2170,7 @@ Formats the input as a time string using the format "HH:mm".
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:96](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L96)
+[packages/framework/esm-utils/src/omrs-dates.ts:97](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L97)
 
 ___
 
@@ -2136,7 +2193,7 @@ Formats the input as a date string using the format "DD-MMM".
 
 #### Defined in
 
-[packages/framework/esm-utils/src/omrs-dates.ts:120](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L120)
+[packages/framework/esm-utils/src/omrs-dates.ts:121](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-utils/src/omrs-dates.ts#L121)
 
 ___
 
@@ -2257,7 +2314,7 @@ writing a module for a specific implementation.
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/extensions.ts:174](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L174)
+[packages/framework/esm-extensions/src/extensions.ts:175](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L175)
 
 ___
 
@@ -2280,7 +2337,7 @@ Avoid using this. Extension attachments should be considered declarative.
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/extensions.ts:205](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L205)
+[packages/framework/esm-extensions/src/extensions.ts:206](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L206)
 
 ___
 
@@ -2302,7 +2359,7 @@ Avoid using this. Extension attachments should be considered declarative.
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/extensions.ts:229](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L229)
+[packages/framework/esm-extensions/src/extensions.ts:230](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L230)
 
 ___
 
@@ -2326,13 +2383,13 @@ An array of extensions assigned to the named slot
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/extensions.ts:360](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L360)
+[packages/framework/esm-extensions/src/extensions.ts:373](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L373)
 
 ___
 
 ### getConnectedExtensions
 
-▸ **getConnectedExtensions**(`assignedExtensions`, `online?`): [`ConnectedExtension`](interfaces/ConnectedExtension.md)[]
+▸ **getConnectedExtensions**(`assignedExtensions`, `online?`, `enabledFeatureFlags?`): [`ConnectedExtension`](interfaces/ConnectedExtension.md)[]
 
 Filters a list of extensions according to whether they support the
 current connectivity status.
@@ -2343,6 +2400,7 @@ current connectivity status.
 | :------ | :------ | :------ | :------ |
 | `assignedExtensions` | [`AssignedExtension`](interfaces/AssignedExtension.md)[] | `undefined` | The list of extensions to filter. |
 | `online` | ``null`` \| `boolean` | `null` | Whether the app is currently online. If `null`, uses `navigator.onLine`. |
+| `enabledFeatureFlags` | ``null`` \| `string`[] | `null` | The names of all enabled feature flags. If `null`, looks    up the feature flags using the feature flags API. |
 
 #### Returns
 
@@ -2352,7 +2410,7 @@ A list of extensions that should be rendered
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/extensions.ts:287](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L287)
+[packages/framework/esm-extensions/src/extensions.ts:290](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L290)
 
 ___
 
@@ -2384,7 +2442,7 @@ getExtensionNameFromId("baz")
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/extensions.ts:118](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L118)
+[packages/framework/esm-extensions/src/extensions.ts:119](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/extensions.ts#L119)
 
 ___
 
@@ -2401,7 +2459,7 @@ state of the extension system.
 
 #### Defined in
 
-[packages/framework/esm-extensions/src/store.ts:130](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/store.ts#L130)
+[packages/framework/esm-extensions/src/store.ts:133](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-extensions/src/store.ts#L133)
 
 ___
 
@@ -2487,7 +2545,7 @@ ___
 ▸ **useConnectedExtensions**(`slotName`): [`ConnectedExtension`](interfaces/ConnectedExtension.md)[]
 
 Gets the assigned extension for a given extension slot name.
-Considers if offline or online.
+Considers if offline or online, and what feature flags are enabled.
 
 #### Parameters
 
@@ -2501,7 +2559,7 @@ Considers if offline or online.
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useConnectedExtensions.ts:15](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useConnectedExtensions.ts#L15)
+[packages/framework/esm-react-utils/src/useConnectedExtensions.ts:17](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useConnectedExtensions.ts#L17)
 
 ___
 
@@ -2551,7 +2609,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `actions` | [`Actions`](API.md#actions) |
+| `actions` | [`Actions`](API.md#actions)<[`ExtensionStore`](interfaces/ExtensionStore.md)\> |
 
 #### Returns
 
@@ -2567,7 +2625,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `actions?` | [`Actions`](API.md#actions) |
+| `actions?` | [`Actions`](API.md#actions)<[`ExtensionStore`](interfaces/ExtensionStore.md)\> |
 
 #### Returns
 
@@ -2629,6 +2687,39 @@ It can then be used to turn on or off features in the code.
 #### Defined in
 
 [packages/framework/esm-feature-flags/src/feature-flags.ts:62](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-feature-flags/src/feature-flags.ts#L62)
+
+___
+
+### useFeatureFlag
+
+▸ **useFeatureFlag**(`flagName`): `boolean`
+
+Use this function to tell whether a feature flag is toggled on or off.
+
+Example:
+
+```tsx
+import { useFeatureFlag } from "@openmrs/esm-react-utils";
+
+export function MyComponent() {
+ const isMyFeatureFlagOn = useFeatureFlag("my-feature-flag");
+ return <>{isMyFeatureFlagOn && <ExperimentalFeature />}</>;
+}
+```
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `flagName` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[packages/framework/esm-react-utils/src/useFeatureFlag.ts:19](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useFeatureFlag.ts#L19)
 
 ___
 
@@ -3689,15 +3780,16 @@ The newly created store.
 
 #### Defined in
 
-[packages/framework/esm-state/src/state.ts:19](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L19)
+[packages/framework/esm-state/src/state.ts:28](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L28)
 
 ___
 
 ### createUseStore
 
-▸ **createUseStore**<`T`\>(`store`): () => `T`(`actions`: [`Actions`](API.md#actions)) => `T` & [`BoundActions`](API.md#boundactions)(`actions?`: [`Actions`](API.md#actions)) => `T` & [`BoundActions`](API.md#boundactions)
+▸ **createUseStore**<`T`\>(`store`): () => `T`(`actions`: [`Actions`](API.md#actions)<`T`\>) => `T` & [`BoundActions`](API.md#boundactions)(`actions?`: [`Actions`](API.md#actions)<`T`\>) => `T` & [`BoundActions`](API.md#boundactions)
 
-Avoid this; generally prefer to have clients use `useStore(yourStore)`
+Whenever possible, use `useStore(yourStore)` instead. This function is for creating a
+custom hook for a specific store.
 
 #### Type parameters
 
@@ -3727,7 +3819,7 @@ Avoid this; generally prefer to have clients use `useStore(yourStore)`
 
 | Name | Type |
 | :------ | :------ |
-| `actions` | [`Actions`](API.md#actions) |
+| `actions` | [`Actions`](API.md#actions)<`T`\> |
 
 ##### Returns
 
@@ -3739,7 +3831,7 @@ Avoid this; generally prefer to have clients use `useStore(yourStore)`
 
 | Name | Type |
 | :------ | :------ |
-| `actions?` | [`Actions`](API.md#actions) |
+| `actions?` | [`Actions`](API.md#actions)<`T`\> |
 
 ##### Returns
 
@@ -3747,23 +3839,7 @@ Avoid this; generally prefer to have clients use `useStore(yourStore)`
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/createUseStore.ts:33](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/createUseStore.ts#L33)
-
-___
-
-### getAppState
-
-▸ **getAppState**(): `StoreApi`<[`AppState`](interfaces/AppState.md)\>
-
-#### Returns
-
-`StoreApi`<[`AppState`](interfaces/AppState.md)\>
-
-The [store](https://github.com/developit/unistore#store) named `app`.
-
-#### Defined in
-
-[packages/framework/esm-state/src/state.ts:86](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L86)
+[packages/framework/esm-react-utils/src/useStore.ts:83](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L83)
 
 ___
 
@@ -3795,7 +3871,7 @@ The found or newly created store.
 
 #### Defined in
 
-[packages/framework/esm-state/src/state.ts:56](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L56)
+[packages/framework/esm-state/src/state.ts:65](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L65)
 
 ___
 
@@ -3830,7 +3906,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-state/src/state.ts:90](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L90)
+[packages/framework/esm-state/src/state.ts:85](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-state/src/state.ts#L85)
 
 ___
 
@@ -3857,7 +3933,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:33](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L33)
+[packages/framework/esm-react-utils/src/useStore.ts:38](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L38)
 
 ▸ **useStore**<`T`, `U`\>(`store`, `select`): `U`
 
@@ -3881,7 +3957,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:34](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L34)
+[packages/framework/esm-react-utils/src/useStore.ts:39](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L39)
 
 ▸ **useStore**<`T`, `U`\>(`store`, `select`, `actions`): `T` & [`BoundActions`](API.md#boundactions)
 
@@ -3898,7 +3974,7 @@ ___
 | :------ | :------ |
 | `store` | `StoreApi`<`T`\> |
 | `select` | `undefined` |
-| `actions` | [`Actions`](API.md#actions) |
+| `actions` | [`Actions`](API.md#actions)<`T`\> |
 
 #### Returns
 
@@ -3906,7 +3982,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:35](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L35)
+[packages/framework/esm-react-utils/src/useStore.ts:40](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L40)
 
 ▸ **useStore**<`T`, `U`\>(`store`, `select`, `actions`): `U` & [`BoundActions`](API.md#boundactions)
 
@@ -3923,7 +3999,7 @@ ___
 | :------ | :------ |
 | `store` | `StoreApi`<`T`\> |
 | `select` | (`state`: `T`) => `U` |
-| `actions` | [`Actions`](API.md#actions) |
+| `actions` | [`Actions`](API.md#actions)<`T`\> |
 
 #### Returns
 
@@ -3931,7 +4007,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:40](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L40)
+[packages/framework/esm-react-utils/src/useStore.ts:45](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L45)
 
 ___
 
@@ -3947,10 +4023,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `store` | `StoreApi`<`T`\> |
-| `actions` | [`Actions`](API.md#actions) |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `store` | `StoreApi`<`T`\> | A zustand store |
+| `actions` | [`Actions`](API.md#actions)<`T`\> |  |
 
 #### Returns
 
@@ -3958,7 +4034,7 @@ ___
 
 #### Defined in
 
-[packages/framework/esm-react-utils/src/useStore.ts:61](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L61)
+[packages/framework/esm-react-utils/src/useStore.ts:72](https://github.com/openmrs/openmrs-esm-core/blob/main/packages/framework/esm-react-utils/src/useStore.ts#L72)
 
 ___
 
@@ -4285,14 +4361,14 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `currentPage` | `number` |
+| `goTo` | (`page`: `number`) => `void` |
+| `goToNext` | () => `void` |
+| `goToPrevious` | () => `void` |
 | `paginated` | `boolean` |
 | `results` | `T`[] |
 | `showNextButton` | `boolean` |
 | `showPreviousButton` | `boolean` |
 | `totalPages` | `number` |
-| `goTo` | (`page`: `number`) => `void` |
-| `goToNext` | () => `void` |
-| `goToPrevious` | () => `void` |
 
 #### Defined in
 
